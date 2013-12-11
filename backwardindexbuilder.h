@@ -10,9 +10,10 @@ using namespace std;
 
 
 #define NB_VISUAL_WORDS 1000000
+//#define NB_HIT_BUCKET 43000000 // for loading about 500 MB of the forward index in memory.
 #define NB_HIT_BUCKET 500000
-#define HIT_DATA_SIZE 12
-#define BACKWARD_INDEX_ENTRY_SIZE 8
+#define HIT_DATA_SIZE 14
+#define BACKWARD_INDEX_ENTRY_SIZE 10
 
 
 class BackwardIndexBuilder : public Thread
@@ -20,7 +21,6 @@ class BackwardIndexBuilder : public Thread
 public:
     BackwardIndexBuilder(string forwardIndexPath,
                          string backwardIndexPath);
-    void init();
     virtual ~BackwardIndexBuilder();
     void *run();
     void countWriteVisualWordOccurrences();

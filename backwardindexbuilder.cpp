@@ -16,31 +16,8 @@ BackwardIndexBuilder::BackwardIndexBuilder(string forwardIndexPath,
 }
 
 
-void BackwardIndexBuilder::init()
-{
-    ifs.open(forwardIndexPath.c_str(), ios_base::binary);
-    if (!ifs.good())
-    {
-        cout << "Could not open the forward index file." << endl;
-        exit(1);
-    }
-
-    ofs.open(backwardIndexPath.c_str(), ios_base::binary);
-    if (!ofs.good())
-    {
-        cout << "Could not open the backward index file." << endl;
-        exit(1);
-    }
-
-    wordOffSet = new u_int64_t[NB_VISUAL_WORDS + 1];
-}
-
-
 BackwardIndexBuilder::~BackwardIndexBuilder()
 {
-    ifs.close();
-    ofs.close();
-    delete[] wordOffSet;
     pthread_mutex_destroy(&mutexCompleted);
 }
 
@@ -74,8 +51,8 @@ void BackwardIndexBuilder::countWriteVisualWordOccurrences()
     while (!ifs.eof())
     {
         // Read one hit.
-        char p_buf[12];
-        ifs.read(p_buf, 12);
+        char p_buf[HIT_DATA_SIZE];
+        ifs.read(p_buf, HIT_DATA_SIZE);
 
         u_int32_t i_wordId = *(u_int32_t *)(p_buf);
 
@@ -101,6 +78,22 @@ void BackwardIndexBuilder::countWriteVisualWordOccurrences()
 
 void BackwardIndexBuilder::writeIndex()
 {
+    ifs.open(forwardIndexPath.c_str(), ios_base::binary);
+    if (!ifs.good())
+    {
+        cout << "Could not open the forward index file." << endl;
+        exit(1);
+    }
+
+    ofs.open(backwardIndexPath.c_str(), ios_base::binary);
+    if (!ofs.good())
+    {
+        cout << "Could not open the backward index file." << endl;
+        exit(1);
+    }
+
+    wordOffSet = new u_int64_t[NB_VISUAL_WORDS + 1];
+
     cout << "Writing the backward index." << endl;
 
     // Count the number of hits in the forward index.
@@ -123,6 +116,10 @@ void BackwardIndexBuilder::writeIndex()
     cout << "Writing last bucket." << endl;
     writeIndexBucket(i_forwardIndexNbHits - i * NB_HIT_BUCKET);
     cout << "Done !" << endl;
+
+    ifs.close();
+    ofs.close();
+    delete[] wordOffSet;
 }
 
 
@@ -143,16 +140,18 @@ void BackwardIndexBuilder::writeIndexBucket(unsigned i_nbHits)
     {
         // Read one hit from the buffer.
         u_int32_t i_wordId = *(u_int32_t *)p;
-        p += sizeof(u_int32_t);
-        u_int32_t i_imageId = *(u_int32_t *)p;
-        p += sizeof(u_int32_t);
-        u_int32_t i_bundledFeatureId = *(u_int32_t *)p;
-        p += sizeof(u_int32_t);
+        u_int32_t i_imageId = *(u_int32_t *)(p + 4);
+        u_int16_t i_angle = *(u_int16_t *)(p + 8);
+        u_int16_t x = *(u_int16_t *)(p + 10);
+        u_int16_t y = *(u_int16_t *)(p + 12);
+        p += HIT_DATA_SIZE;
 
         // Write the hit at the right place of the backward index.
         ofs.seekp(wordOffSet[i_wordId]);
         ofs.write((char *)(&i_imageId), sizeof(u_int32_t));
-        ofs.write((char *)(&i_bundledFeatureId), sizeof(u_int32_t));
+        ofs.write((char *)(&i_angle), sizeof(u_int16_t));
+        ofs.write((char *)(&x), sizeof(u_int16_t));
+        ofs.write((char *)(&y), sizeof(u_int16_t));
 
         wordOffSet[i_wordId] += BACKWARD_INDEX_ENTRY_SIZE;
 
@@ -197,6 +196,7 @@ u_int32_t BackwardIndexBuilder::getHitWordId(char *p_buf, unsigned i)
 {
     return *(u_int32_t *)(p_buf + i * HIT_DATA_SIZE);
 }
+
 
 
 /**
