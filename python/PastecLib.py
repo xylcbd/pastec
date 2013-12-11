@@ -3,20 +3,14 @@
 import socket
 import struct
 
+from PastecLibMessages import Reply, Query
+
+
 class PastecException(Exception):
     def __init__(self, msg):
         self.msg = msg
     def __str__(self):
         return repr(self.msg)
-
-
-class Reply():
-    OK = 1
-    ERROR_GENERIC = 2
-    PONG = 3
-    WRONG_MODE = 10
-    IMAGE_DATA_TOO_BIG = 20
-    IMAGE_NOT_INDEXED = 21
 
 
 class PastecConnection:
@@ -44,14 +38,14 @@ class PastecConnection:
         return val
 
     def setIndexMode(self):
-        d = b'\x01' # Forward index mode
+        d = struct.pack("B", Query.INIT_BUILD_FORWARD_INDEX)
         self.sendData(d)
         val = self.waitForReply()
         if val != Reply.OK:
             raise PastecException("Could not start index mode.") 
 
     def indexImageFile(self, imageId, filePath):
-        fd = open("test.jpg", "rb")
+        fd = open(filePath, "rb")
 
         imageData = b""
         counter = 0
@@ -63,10 +57,10 @@ class PastecConnection:
             imageData += buf
             counter += 1
             if counter == 1024:
-                print("File too big!", file=sys.stderr)
-                exit(1)
+                raise PastecException("Image file too big.")
+                return
 
-        d = b'\x0b' # Index image msg.
+        d = struct.pack("B", Query.INDEX_IMAGE)
         d += struct.pack("II", imageId, len(imageData))
         d += imageData
 
