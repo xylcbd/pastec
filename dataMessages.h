@@ -2,7 +2,7 @@
 #define MESSAGES_H
 
 
-enum Messages
+enum Queries
 {
     INIT_BUILD_FORWARD_INDEX = 1,
     BUILD_BACKWARD_INDEX = 2,

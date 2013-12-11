@@ -4,8 +4,6 @@
 #include <pthread.h>
 #include <assert.h>
 
-class ThreadManager;
-
 
 class Thread
 {
@@ -19,7 +17,20 @@ public:
         assert(pthread_join(thread, &res) == 0);
     }
 
+    bool start()
+    {
+        pthread_create(&thread, NULL, &runThread, this);
+        return true;
+    }
+
 protected:
+    static void *runThread(void *p)
+    {
+        Thread *newThread = (Thread *)p;
+        newThread->b_mustStop = false;
+        return newThread->run();
+    }
+
     bool b_mustStop;
 
 private:

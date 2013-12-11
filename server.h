@@ -19,8 +19,7 @@ class Server : public Thread
 {
 public:
     Server(DataWriter *dataWriter, BackwardIndexBuilder *backwardIndexBuilder,
-           ImageProcessor *imageProcessor,
-           IndexMode *mode, ThreadManager *threadManager);
+           ImageProcessor *imageProcessor, IndexMode *mode);
     virtual ~Server();
     void stop();
     void removeClient(ClientConnection *c);
@@ -32,8 +31,6 @@ private:
 
     set<ClientConnection *> clients;
     list<ClientConnection *> clientsToRemove;
-
-    ThreadManager *threadManager;
 
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;

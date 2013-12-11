@@ -13,15 +13,13 @@
 
 #include "server.h"
 #include "datawriter.h"
-#include "threadmanager.h"
 #include "clientconnection.h"
 
 
 Server::Server(DataWriter *dataWriter, BackwardIndexBuilder *backwardIndexBuilder,
-               ImageProcessor *imageProcessor,
-               IndexMode *mode, ThreadManager *threadManager)
-    : portNumber(4212), threadManager(threadManager),
-      dataWriter(dataWriter), backwardIndexBuilder(backwardIndexBuilder),
+               ImageProcessor *imageProcessor, IndexMode *mode)
+    : portNumber(4212), dataWriter(dataWriter),
+      backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor), mode(mode)
 
 {
@@ -125,8 +123,8 @@ void *Server::run()
                          << ", port " << ntohs(clientname.sin_port) << "." << endl;
                     ClientConnection *c = new ClientConnection(newFd, dataWriter,
                                                                backwardIndexBuilder, imageProcessor,
-                                                               mode, this, threadManager);
-                    threadManager->startThread(c);
+                                                               mode, this);
+                    c->start();
                     clients.insert(c);
                 }
                 else

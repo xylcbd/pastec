@@ -26,8 +26,7 @@ public:
     ClientConnection(int socketFd, DataWriter *dataWriter,
                      BackwardIndexBuilder *backwardIndexBuilder,
                      ImageProcessor *imageProcessor,
-                     IndexMode *mode, Server *server,
-                     ThreadManager *threadManager);
+                     IndexMode *mode, Server *server);
     virtual ~ClientConnection();
     void stop();
 
@@ -49,7 +48,6 @@ private:
     ImageProcessor *imageProcessor;
     IndexMode *mode;
     Server *server;
-    ThreadManager *threadManager;
 };
 
 #endif // CLIENTCONNECTION_H

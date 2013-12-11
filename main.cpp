@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "threadmanager.h"
 #include "server.h"
 #include "datawriter.h"
 #include "backwardindexbuilder.h"
@@ -20,16 +19,14 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    ThreadManager threadManager;
-
     DataWriter *dw = new DataWriter("forwardIndex.dat");
     BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
                                                          "backwardIndex.dat");
     ImageProcessor *ip = new ImageProcessor(dw, string(argv[1]));
     IndexMode mode;
-    Server *s = new Server(dw, bib, ip, &mode, &threadManager);
+    Server *s = new Server(dw, bib, ip, &mode);
 
-    threadManager.startThread(s);
+    s->start();
 
     s->join();
 

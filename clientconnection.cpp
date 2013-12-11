@@ -10,19 +10,17 @@
 #include "dataMessages.h"
 #include "server.h"
 #include "indexmode.h"
-#include "threadmanager.h"
 #include "imageprocessor.h"
 
 
 ClientConnection::ClientConnection(int socketFd, DataWriter *dataWriter,
                                    BackwardIndexBuilder *backwardIndexBuilder,
                                    ImageProcessor *imageProcessor,
-                                   IndexMode *mode, Server *server,
-                                   ThreadManager *threadManager)
+                                   IndexMode *mode, Server *server)
     : socketFd(socketFd), dataWriter(dataWriter),
       backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor),
-      mode(mode), server(server), threadManager(threadManager)
+      mode(mode), server(server)
 {
     /* Create a pipe. */
     int pipefd[2];
@@ -172,7 +170,7 @@ void ClientConnection::parseMessages()
                 return;
             }
             mode->mode = BUILD_FORWARD_INDEX_MODE;
-            threadManager->startThread(dataWriter);
+            dataWriter->start();
 
             sendReply(OK);
 
@@ -188,7 +186,7 @@ void ClientConnection::parseMessages()
                 return;
             }
             mode->mode = BUILD_BACKWARD_INDEX_MODE;
-            threadManager->startThread(backwardIndexBuilder);
+            backwardIndexBuilder->start();
 
             sendReply(OK);
 

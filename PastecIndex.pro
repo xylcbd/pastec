@@ -5,7 +5,6 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     server.cpp \
-    threadmanager.cpp \
     datawriter.cpp \
     clientconnection.cpp \
     backwardindexbuilder.cpp \
@@ -13,7 +12,6 @@ SOURCES += main.cpp \
 
 HEADERS += \
     server.h \
-    threadmanager.h \
     thread.h \
     datawriter.h \
     dataMessages.h \
