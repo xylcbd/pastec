@@ -94,9 +94,9 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, cha
         u_int16_t x = keypoints[i].pt.x / i_imgWidth * (1 << 16);
         u_int16_t y = keypoints[i].pt.y / i_imgHeight * (1 << 16);
 
-        vector<int> indices(4);
-        vector<float> dists(4);
-        index->knnSearch(descriptors.row(i), indices, dists, 4);
+        vector<int> indices(1);
+        vector<float> dists(1);
+        index->knnSearch(descriptors.row(i), indices, dists, 1);
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
