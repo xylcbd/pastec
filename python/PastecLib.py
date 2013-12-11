@@ -57,19 +57,19 @@ class PastecConnection:
 
     def indexImageFile(self, imageId, filePath):
         fd = open(filePath, "rb")
-
         imageData = b""
-        counter = 0
         while 1:
             buf = fd.read(1024)
             # End of file
             if not buf:
                 break
             imageData += buf
-            counter += 1
-            if counter == 1024:
-                raise PastecException("Image file too big.")
-                return
+
+        self.indexImageData(imageId, imageData)
+
+    def indexImageData(self, imageId, imageData):
+        if len(imageData) > 1024 * 1024:
+            raise PastecException("Image file too big.")
 
         d = struct.pack("B", Query.INDEX_IMAGE)
         d += struct.pack("II", imageId, len(imageData))
