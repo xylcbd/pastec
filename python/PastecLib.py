@@ -37,12 +37,23 @@ class PastecConnection:
         val = struct.unpack("B", d)[0]
         return val
 
-    def setIndexMode(self):
+    def initBuildForwardIndex(self):
         d = struct.pack("B", Query.INIT_BUILD_FORWARD_INDEX)
         self.sendData(d)
         val = self.waitForReply()
         if val != Reply.OK:
-            raise PastecException("Could not start index mode.") 
+            raise PastecException("Could not start forward index building.")
+            
+    def buildBackwardIndex(self):
+        d = struct.pack("B", Query.BUILD_BACKWARD_INDEX)
+        self.sendData(d)
+        val = self.waitForReply()
+        if val != Reply.OK:
+            raise PastecException("Could not build backward index.")
+
+    def stopServer(self):
+        d = struct.pack("B", Query.STOP)
+        self.sendData(d)
 
     def indexImageFile(self, imageId, filePath):
         fd = open(filePath, "rb")
