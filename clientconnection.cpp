@@ -282,6 +282,11 @@ void ClientConnection::parseMessages()
 }
 
 
+/**
+ * @brief Send a reply code
+ * @param reply the reply code
+ * @return true on success else false.
+ */
 bool ClientConnection::sendReply(char reply)
 {
     char p_reply[] = {reply};
@@ -289,6 +294,12 @@ bool ClientConnection::sendReply(char reply)
 }
 
 
+/**
+ * @brief Send a message to the client
+ * @param i_replyLen the length of the message.
+ * @param p_reply a pointer to the message
+ * @return true on success else false.
+ */
 bool ClientConnection::sendReply(unsigned i_replyLen, char *p_reply)
 {
     unsigned i_nbBytesSent = 0;
