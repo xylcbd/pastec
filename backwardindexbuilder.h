@@ -29,6 +29,7 @@ public:
     bool hasFinished();
 
 private:
+    bool openFiles();
     void quickSortBucket(char *p_buf, unsigned start, unsigned end);
     u_int32_t getHitWordId(char *p_buf, unsigned i);
 

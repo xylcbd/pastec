@@ -32,6 +32,7 @@ void *BackwardIndexBuilder::run()
     b_completed = false;
     pthread_mutex_unlock(&mutexCompleted);
 
+    assert(openFiles());
     countWriteVisualWordOccurrences();
     writeIndex();
 
@@ -40,6 +41,30 @@ void *BackwardIndexBuilder::run()
     pthread_mutex_unlock(&mutexCompleted);
 
     return NULL;
+}
+
+
+/**
+ * @brief Open the forward and backward index files.
+ * @return true on success else false.
+ */
+bool BackwardIndexBuilder::openFiles()
+{
+    ifs.open(forwardIndexPath.c_str(), ios_base::binary);
+    if (!ifs.good())
+    {
+        cout << "Could not open the forward index file." << endl;
+        return false;
+    }
+
+    ofs.open(backwardIndexPath.c_str(), ios_base::binary);
+    if (!ofs.good())
+    {
+        cout << "Could not open the backward index file." << endl;
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -61,6 +86,7 @@ void BackwardIndexBuilder::countWriteVisualWordOccurrences()
     }
 
     cout << "Writing the number of occurences." << endl;
+    wordOffSet = new u_int64_t[NB_VISUAL_WORDS + 1];
     u_int64_t i_offset = NB_VISUAL_WORDS * sizeof(u_int64_t);
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
     {
@@ -78,22 +104,6 @@ void BackwardIndexBuilder::countWriteVisualWordOccurrences()
 
 void BackwardIndexBuilder::writeIndex()
 {
-    ifs.open(forwardIndexPath.c_str(), ios_base::binary);
-    if (!ifs.good())
-    {
-        cout << "Could not open the forward index file." << endl;
-        exit(1);
-    }
-
-    ofs.open(backwardIndexPath.c_str(), ios_base::binary);
-    if (!ofs.good())
-    {
-        cout << "Could not open the backward index file." << endl;
-        exit(1);
-    }
-
-    wordOffSet = new u_int64_t[NB_VISUAL_WORDS + 1];
-
     cout << "Writing the backward index." << endl;
 
     // Count the number of hits in the forward index.
@@ -196,7 +206,6 @@ u_int32_t BackwardIndexBuilder::getHitWordId(char *p_buf, unsigned i)
 {
     return *(u_int32_t *)(p_buf + i * HIT_DATA_SIZE);
 }
-
 
 
 /**
