@@ -8,7 +8,10 @@ SOURCES += main.cpp \
     datawriter.cpp \
     clientconnection.cpp \
     backwardindexbuilder.cpp \
-    imageprocessor.cpp
+    imageprocessor.cpp \
+    imagesearcher.cpp \
+    backwardindexreader.cpp \
+    imagereranker.cpp
 
 HEADERS += \
     server.h \
@@ -18,7 +21,12 @@ HEADERS += \
     clientconnection.h \
     backwardindexbuilder.h \
     indexmode.h \
-    imageprocessor.h
+    imageprocessor.h \
+    imagesearcher.h \
+    hit.h \
+    backwardindexreader.h \
+    searchResult.h \
+    imagereranker.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \
@@ -28,6 +36,7 @@ LIBS += -pthread \
         -lopencv_flann \
         -lopencv_nonfree \
         -lopencv_features2d \
+        -lopencv_calib3d \
         -lpq \
         -lcurl
 
@@ -36,4 +45,5 @@ INCLUDEPATH += /home/magsoft/trunks/opencv-2.4.6.1/modules/core/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/highgui/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/imgproc/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/flann/include \
-            /home/magsoft/trunks/opencv-2.4.6.1/modules/nonfree/include
+            /home/magsoft/trunks/opencv-2.4.6.1/modules/nonfree/include \
+            /home/magsoft/trunks/opencv-2.4.6.1/modules/calib3d/include

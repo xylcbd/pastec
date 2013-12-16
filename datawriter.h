@@ -11,7 +11,7 @@
 using namespace std;
 
 
-struct Hit
+struct HitForward
 {
     u_int32_t i_wordId;
     u_int32_t i_imageId;
@@ -26,18 +26,18 @@ class DataWriter : public Thread
 public:
     DataWriter(string fileName);
     virtual ~DataWriter();
-    void queueHit(Hit hit);
+    void queueHit(HitForward hit);
     void stop();
 
 private:
     void *run();
-    bool writeToFile(Hit hit);
+    bool writeToFile(HitForward hit);
     void closeFile();
 
     pthread_mutex_t mutex;
     pthread_cond_t hitAvailable;
 
-    queue<Hit> hits;
+    queue<HitForward> hits;
     ofstream ofs;
 
     string fileName;

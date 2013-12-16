@@ -14,6 +14,7 @@ public:
     void join()
     {
         void *res;
+        b_mustStop = true;
         assert(pthread_join(thread, &res) == 0);
     }
 

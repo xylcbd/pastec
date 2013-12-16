@@ -11,15 +11,18 @@
 #include "server.h"
 #include "indexmode.h"
 #include "imageprocessor.h"
+#include "imagesearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd, DataWriter *dataWriter,
                                    BackwardIndexBuilder *backwardIndexBuilder,
                                    ImageProcessor *imageProcessor,
+                                   ImageSearcher *imageSearcher,
                                    IndexMode *mode, Server *server)
     : socketFd(socketFd), dataWriter(dataWriter),
       backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor),
+      imageSearcher(imageSearcher),
       mode(mode), server(server)
 {
     /* Create a pipe. */
@@ -170,6 +173,7 @@ void ClientConnection::parseMessages()
                 return;
             }
             mode->mode = BUILD_FORWARD_INDEX_MODE;
+            imageProcessor->init();
             dataWriter->start();
 
             sendReply(OK);
@@ -194,6 +198,21 @@ void ClientConnection::parseMessages()
             buf.length -= 1;
             break;
         }
+        case SEARCH_MODE:
+        {
+            if (!closeCurrentMode())
+            {
+                sendReply(ERROR_GENERIC);
+                return;
+            }
+            imageSearcher->start();
+
+            sendReply(OK);
+
+            memmove(p, p + 1, buf.length - 1);
+            buf.length -= 1;
+            break;
+        }
         case INDEX:
         {
             if (mode->mode != BUILD_FORWARD_INDEX_MODE)
@@ -205,7 +224,7 @@ void ClientConnection::parseMessages()
             if (buf.length < MSG_INDEX_LEN)
                 return; // The complete message was not received.
 
-            Hit newHit;
+            HitForward newHit;
             newHit.i_wordId = *(u_int32_t *)(p + 1);
             newHit.i_imageId = *(u_int32_t *)(p + 5);
             newHit.i_angle = *(u_int16_t *)(p + 9);
@@ -260,6 +279,34 @@ void ClientConnection::parseMessages()
             sendReply(PONG);
             memmove(p, p + 1, buf.length - 1);
             buf.length -= 1;
+            break;
+        }
+        case SEARCH:
+        {
+            /* Search request:
+             * - 1 byte for the command code.
+             * - 4 byte to give the size of the request image.
+             * - X bytes for the image data.
+             */
+
+            if (buf.length < 5) // Not enough bytes to decode the msg length.
+                return;
+
+            u_int32_t i_imageSize = *(u_int32_t *)(p + 1);
+            unsigned i_msgSize = 5 + i_imageSize;
+
+            if (buf.length < i_msgSize) // The picture has not been entirely received.
+                return;
+
+            SearchRequest req;
+            req.imageData.resize(i_imageSize);
+            req.client = this;
+            memcpy((void *)&req.imageData[0], p + 5, i_imageSize);
+            imageSearcher->queueRequest(req);
+
+            assert(i_msgSize >= buf.length);
+            memmove(p, p + i_msgSize, buf.length - i_msgSize);
+            buf.length -= i_msgSize;
             break;
         }
         case STOP:
@@ -327,10 +374,14 @@ bool ClientConnection::closeCurrentMode()
         break;
     case BUILD_FORWARD_INDEX_MODE:
         dataWriter->stop();
+        imageProcessor->stop();
         break;
     case BUILD_BACKWARD_INDEX_MODE:
         if (!backwardIndexBuilder->hasFinished())
             b_ret = false;
+        break;
+    case SEARCH_MODE:
+        imageSearcher->join();
         break;
     default:
         assert(0);

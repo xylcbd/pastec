@@ -4,6 +4,7 @@
 #include "datawriter.h"
 #include "backwardindexbuilder.h"
 #include "imageprocessor.h"
+#include "imagesearcher.h"
 #include "indexmode.h"
 
 
@@ -20,11 +21,12 @@ int main(int argc, char** argv)
     }
 
     DataWriter *dw = new DataWriter("forwardIndex.dat");
+    ImageProcessor *ip = new ImageProcessor(dw, string(argv[1]));
     BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
                                                          "backwardIndex.dat");
-    ImageProcessor *ip = new ImageProcessor(dw, string(argv[1]));
+    ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]));
     IndexMode mode;
-    Server *s = new Server(dw, bib, ip, &mode);
+    Server *s = new Server(dw, bib, ip, is, &mode);
 
     s->start();
 

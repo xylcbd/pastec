@@ -5,7 +5,8 @@ enum Modes
 {
     NO_MODE = 0,
     BUILD_FORWARD_INDEX_MODE = 1,
-    BUILD_BACKWARD_INDEX_MODE = 2
+    BUILD_BACKWARD_INDEX_MODE = 2,
+    SEARCH_MODE = 3
 };
 
 

@@ -4,7 +4,7 @@ import PastecLib
 
 pastec = PastecLib.PastecConnection()
 
-pastec.connect()
+pastec.connect("pastec2")
 pastec.initBuildForwardIndex()
 pastec.indexImageFile(42, "test.jpg")
 

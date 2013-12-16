@@ -16,7 +16,8 @@ class ImageProcessor
 {
 public:
     ImageProcessor(DataWriter *dataWriter, String visualWordsPath);
-    ~ImageProcessor();
+    void init();
+    void stop();
 
     bool processNewImage(unsigned i_imageId, unsigned i_imgSize, char *p_imgData);
 
@@ -24,6 +25,7 @@ private:
     bool readVisualWords(string fileName);
 
     DataWriter *dataWriter;
+    String visualWordsPath;
     Mat *words;  // The matrix that stores the visual words.
     flann::Index *index; // The kd-tree index.
 };

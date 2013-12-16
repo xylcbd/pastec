@@ -9,6 +9,7 @@
 class Server;
 class IndexMode;
 class ImageProcessor;
+class ImageSearcher;
 
 
 #define MAXMSG 2*1024*1024
@@ -26,9 +27,11 @@ public:
     ClientConnection(int socketFd, DataWriter *dataWriter,
                      BackwardIndexBuilder *backwardIndexBuilder,
                      ImageProcessor *imageProcessor,
+                     ImageSearcher *imageSearcher,
                      IndexMode *mode, Server *server);
     virtual ~ClientConnection();
     void stop();
+    bool sendReply(unsigned i_replyLen, char *p_reply);
 
 private:
     void *run();
@@ -37,7 +40,6 @@ private:
     bool closeCurrentMode();
 
     bool sendReply(char reply);
-    bool sendReply(unsigned i_replyLen, char *p_reply);
 
     int socketFd;
     int closeFd;
@@ -46,6 +48,7 @@ private:
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;
     ImageProcessor *imageProcessor;
+    ImageSearcher *imageSearcher;
     IndexMode *mode;
     Server *server;
 };

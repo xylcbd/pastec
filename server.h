@@ -10,6 +10,7 @@ class ClientConnection;
 class DataWriter;
 class BackwardIndexBuilder;
 class ImageProcessor;
+class ImageSearcher;
 class IndexMode;
 
 using namespace std;
@@ -18,8 +19,11 @@ using namespace std;
 class Server : public Thread
 {
 public:
-    Server(DataWriter *dataWriter, BackwardIndexBuilder *backwardIndexBuilder,
-           ImageProcessor *imageProcessor, IndexMode *mode);
+    Server(DataWriter *dataWriter,
+           BackwardIndexBuilder *backwardIndexBuilder,
+           ImageProcessor *imageProcessor,
+           ImageSearcher *imageSearcher,
+           IndexMode *mode);
     virtual ~Server();
     void stop();
     void removeClient(ClientConnection *c);
@@ -35,6 +39,7 @@ private:
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;
     ImageProcessor *imageProcessor;
+    ImageSearcher *imageSearcher;
     IndexMode *mode;
 
     int sock;

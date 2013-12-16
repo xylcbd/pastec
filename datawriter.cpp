@@ -37,7 +37,7 @@ void *DataWriter::run()
             }
         }
 
-        Hit hit = hits.front();
+        HitForward hit = hits.front();
         hits.pop();
 
         pthread_mutex_unlock(&mutex);
@@ -55,7 +55,7 @@ void *DataWriter::run()
  * @brief Add a hit in the processing queue for being writen.
  * @param hit the hit to write.
  */
-void DataWriter::queueHit(Hit hit)
+void DataWriter::queueHit(HitForward hit)
 {
     pthread_mutex_lock(&mutex);
 
@@ -87,7 +87,7 @@ void DataWriter::stop()
  * @param hit the new hit to write.
  * @return true on success else false.
  */
-bool DataWriter::writeToFile(Hit hit)
+bool DataWriter::writeToFile(HitForward hit)
 {
     if (!ofs.good())
     {
@@ -115,7 +115,7 @@ void DataWriter::closeFile()
         // Write the remaining hits.
         while (!hits.empty())
         {
-            Hit hit = hits.front();
+            HitForward hit = hits.front();
             hits.pop();
             writeToFile(hit);
         }

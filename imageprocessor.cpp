@@ -13,7 +13,11 @@ using namespace std;
 
 
 ImageProcessor::ImageProcessor(DataWriter *dataWriter, String visualWordsPath)
-    : dataWriter(dataWriter)
+    : dataWriter(dataWriter), visualWordsPath(visualWordsPath)
+{ }
+
+
+void ImageProcessor::init()
 {
     words = new Mat(0, 128, CV_32F); // The matrix that stores the visual words.
 
@@ -26,7 +30,7 @@ ImageProcessor::ImageProcessor(DataWriter *dataWriter, String visualWordsPath)
 }
 
 
-ImageProcessor::~ImageProcessor()
+void ImageProcessor::stop()
 {
     delete words;
     delete index;
@@ -100,7 +104,7 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, cha
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
-            Hit newHit;
+            HitForward newHit;
             newHit.i_wordId = indices[j];
             newHit.i_imageId = i_imageId;
             newHit.i_angle = angle;

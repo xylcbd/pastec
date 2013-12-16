@@ -16,12 +16,17 @@
 #include "clientconnection.h"
 
 
-Server::Server(DataWriter *dataWriter, BackwardIndexBuilder *backwardIndexBuilder,
-               ImageProcessor *imageProcessor, IndexMode *mode)
-    : portNumber(4212), dataWriter(dataWriter),
+Server::Server(DataWriter *dataWriter,
+               BackwardIndexBuilder *backwardIndexBuilder,
+               ImageProcessor *imageProcessor,
+               ImageSearcher *imageSearcher,
+               IndexMode *mode)
+    : portNumber(4212),
+      dataWriter(dataWriter),
       backwardIndexBuilder(backwardIndexBuilder),
-      imageProcessor(imageProcessor), mode(mode)
-
+      imageProcessor(imageProcessor),
+      imageSearcher(imageSearcher),
+      mode(mode)
 {
     /* Create a pipe. */
     int pipefd[2];
@@ -122,7 +127,9 @@ void *Server::run()
                     cout << "Server: connect from host " << inet_ntoa(clientname.sin_addr)
                          << ", port " << ntohs(clientname.sin_port) << "." << endl;
                     ClientConnection *c = new ClientConnection(newFd, dataWriter,
-                                                               backwardIndexBuilder, imageProcessor,
+                                                               backwardIndexBuilder,
+                                                               imageProcessor,
+                                                               imageSearcher,
                                                                mode, this);
                     c->start();
                     clients.insert(c);
