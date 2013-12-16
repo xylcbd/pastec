@@ -51,6 +51,13 @@ class PastecConnection:
         if val != Reply.OK:
             raise PastecException("Could not build backward index.")
 
+    def initSearch(self):
+        d = struct.pack("B", Query.INIT_SEARCH)
+        self.sendData(d)
+        val = self.waitForReply()
+        if val != Reply.OK:
+            raise PastecException("Could not start the searching mode.")
+
     def stopServer(self):
         d = struct.pack("B", Query.STOP)
         self.sendData(d)
