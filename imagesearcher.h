@@ -44,9 +44,10 @@ private:
     unsigned long getTimeDiff(const timeval t1, const timeval t2) const;
     void sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const;
 
-    BackwardIndexReader backwardIndex;
+    BackwardIndexReader *backwardIndex;
     ImageReranker reranker;
 
+    string backwardIndexPath;
     string visualWordsPath;
 
     queue<SearchRequest> requests;

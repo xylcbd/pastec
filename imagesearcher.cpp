@@ -12,7 +12,7 @@
 
 
 ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath)
-    : backwardIndex(backwardIndexPath), visualWordsPath(visualWordsPath)
+    : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath)
 {
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&imageAvailable, NULL);
@@ -32,6 +32,8 @@ ImageSearcher::~ImageSearcher()
  */
 void *ImageSearcher::run()
 {
+    backwardIndex = new BackwardIndexReader(backwardIndexPath);
+
     // Index reader initialization.
     words = new Mat(0, 128, CV_32F); // The matrix that stores the visual words.
     if (!readVisualWords(visualWordsPath, words))
@@ -64,6 +66,7 @@ void *ImageSearcher::run()
 
     delete myIndex;
     delete words;
+    delete backwardIndex;
 
     return NULL;
 }
@@ -161,7 +164,7 @@ void ImageSearcher::searchImage(SearchRequest request)
 
             /* If the word has a too large number of occurence in the index, we consider
              * that it is not relevant. */
-            if (backwardIndex.getWordNbOccurences(indices[j]) > backwardIndex.getMaxNbRecords())
+            if (backwardIndex->getWordNbOccurences(indices[j]) > backwardIndex->getMaxNbRecords())
                 continue;
 
             // Convert the angle to a 16 bit integer.
@@ -177,11 +180,11 @@ void ImageSearcher::searchImage(SearchRequest request)
 
     cout << imageReqHits.size() << " SIFTs kept for the request." << endl;
 
-    const unsigned i_nbTotalIndexedImages = backwardIndex.getTotalNbIndexedImages();
+    const unsigned i_nbTotalIndexedImages = backwardIndex->getTotalNbIndexedImages();
     cout << i_nbTotalIndexedImages << " images indexed in the index." << endl;
 
     map<u_int32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
-    backwardIndex.getImagesWithVisualWords(imageReqHits, indexHits);
+    backwardIndex->getImagesWithVisualWords(imageReqHits, indexHits);
 
     gettimeofday(&t[2], NULL);
     cout << "time: " << getTimeDiff(t[1], t[2]) << " ms." << endl;
@@ -200,7 +203,7 @@ void ImageSearcher::searchImage(SearchRequest request)
         {
             /* TF-IDF according to the paper "Video Google:
              * A Text Retrieval Approach to Object Matching in Videos" */
-            unsigned i_totalNbWords = backwardIndex.countTotalNbWord(it2->i_imageId);
+            unsigned i_totalNbWords = backwardIndex->countTotalNbWord(it2->i_imageId);
             weights[it2->i_imageId] += f_weight / i_totalNbWords * 4;
         }
     }
