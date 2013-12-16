@@ -46,6 +46,8 @@ void *ImageSearcher::run()
     cout << "Building the kd-trees." << endl;
     myIndex = new flann::Index(*words, flann::KDTreeIndexParams());
 
+    cout << "Ready to accept search queries." << endl;
+
     while (!b_mustStop)
     {
         pthread_mutex_lock(&mutex);
