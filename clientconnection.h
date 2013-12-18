@@ -32,14 +32,13 @@ public:
     virtual ~ClientConnection();
     void stop();
     bool sendReply(unsigned i_replyLen, char *p_reply);
+    bool sendReply(char reply);
 
 private:
     void *run();
     int readData();
     void parseMessages();
     bool closeCurrentMode();
-
-    bool sendReply(char reply);
 
     int socketFd;
     int closeFd;
