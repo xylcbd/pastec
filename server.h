@@ -45,6 +45,8 @@ private:
     int sock;
     int closeFd;
     int closeFdRead;
+
+    pthread_mutex_t clientsMutex;
 };
 
 #endif // SERVER_H

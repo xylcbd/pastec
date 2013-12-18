@@ -33,11 +33,15 @@ Server::Server(DataWriter *dataWriter,
     assert(pipe(pipefd) == 0);
     closeFdRead = pipefd[0];
     closeFd = pipefd[1];
+
+    pthread_mutex_init(&clientsMutex, NULL);
 }
 
 
 Server::~Server()
 {
+    pthread_mutex_destroy(&clientsMutex);
+
     /* Close the pipe. */
     close(closeFdRead);
     close(closeFd);
@@ -174,6 +178,7 @@ void Server::stop()
  */
 void Server::removeClient(ClientConnection *c)
 {
-    // TODO: protect this var for concurent access.
+    pthread_mutex_lock(&clientsMutex);
     clientsToRemove.push_back(c);
+    pthread_mutex_unlock(&clientsMutex);
 }
