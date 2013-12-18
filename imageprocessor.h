@@ -7,6 +7,7 @@
 #include <opencv2/nonfree/features2d.hpp>
 
 class DataWriter;
+class ClientConnection;
 
 
 using namespace cv;
@@ -19,7 +20,8 @@ public:
     void init();
     void stop();
 
-    bool processNewImage(unsigned i_imageId, unsigned i_imgSize, char *p_imgData);
+    bool processNewImage(unsigned i_imageId, unsigned i_imgSize,
+                         char *p_imgData, ClientConnection *p_client);
 
 private:
     bool readVisualWords(string fileName);

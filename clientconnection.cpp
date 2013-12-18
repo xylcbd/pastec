@@ -263,12 +263,8 @@ void ClientConnection::parseMessages()
             if (buf.length < i_msgSize)
                 return;
 
-            bool b_ret = imageProcessor->processNewImage(i_imageId, i_imageSize, p + MSG_INDEX_IMAGE_HEADER_LEN);
-
-            if (b_ret)
-                sendReply(OK);
-            else
-                sendReply(IMAGE_NOT_INDEXED);
+            imageProcessor->processNewImage(i_imageId, i_imageSize,
+                                            p + MSG_INDEX_IMAGE_HEADER_LEN, this);
 
             memmove(p, p + i_msgSize, buf.length - i_msgSize);
             buf.length -= i_msgSize;

@@ -8,6 +8,8 @@
 
 #include "imageprocessor.h"
 #include "datawriter.h"
+#include "clientconnection.h"
+#include "dataMessages.h"
 
 using namespace std;
 
@@ -37,7 +39,8 @@ void ImageProcessor::stop()
 }
 
 
-bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, char *p_imgData)
+bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
+                                     char *p_imgData, ClientConnection *p_client)
 {
     vector<char> imgData(i_imgSize);
     memcpy(imgData.data(), p_imgData, i_imgSize);
@@ -51,12 +54,14 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, cha
     {
         const char* err_msg = e.what();
         cout << "Exception caught: " << err_msg << endl;
+        p_client->sendReply(IMAGE_NOT_DECODED);
         return false;
     }
 
     if (!img.data)
     {
         cout << "Error reading the image." << std::endl;
+        p_client->sendReply(IMAGE_NOT_DECODED);
         return false;
     }
 
@@ -68,6 +73,7 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, cha
         || i_imgHeight > 1000)
     {
         cout << "Image too large." << endl;
+        p_client->sendReply(IMAGE_SIZE_TOO_BIG);
         return false;
     }
 
@@ -125,6 +131,8 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize, cha
     imshow("Keypoints 1", img_res);
     waitKey();
 #endif
+
+    p_client->sendReply(OK);
 
     return true;
 }
