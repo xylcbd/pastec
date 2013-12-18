@@ -7,6 +7,8 @@ class Reply():
     WRONG_MODE = 10
     IMAGE_DATA_TOO_BIG = 20
     IMAGE_NOT_INDEXED = 21
+    IMAGE_SIZE_TOO_BIG = 22
+    IMAGE_NOT_DECODED = 23
     
 class Query():
     INIT_BUILD_FORWARD_INDEX = 1

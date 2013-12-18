@@ -85,6 +85,12 @@ class PastecConnection:
         self.sendData(d)
 
         val = self.waitForReply()
-        if val != Reply.OK:
-            raise PastecException("Image not indexed.")  
+        if val == Reply.IMAGE_DATA_TOO_BIG:
+            raise PastecException("Image data too big.")
+        elif val == Reply.IMAGE_SIZE_TOO_BIG:
+            raise PastecException("Image size too big.")
+        elif val == Reply.IMAGE_NOT_DECODED:
+            raise PastecException("The query image could not be decoded.")
+        elif val != Reply.OK
+            raise PastecException("Unkown return code.")
 
