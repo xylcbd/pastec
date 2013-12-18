@@ -128,7 +128,6 @@ class PastecConnection:
 
         # Get the number of images.
         nbImages = struct.unpack("I", msg[1:5])[0]
-        print("Got back " + str(nbImages) + " images.", file=sys.stderr)
 
         # Receive all the message containing the ids of the images.
         while len(msg) < 5 + nbImages * 4:
