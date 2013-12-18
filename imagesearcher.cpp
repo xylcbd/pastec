@@ -339,7 +339,4 @@ void ImageSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds)
     }
 
     req.client->sendReply(p - msg, msg);
-
-    // Close the connection. The transaction is completed.
-    req.client->stop();
 }
