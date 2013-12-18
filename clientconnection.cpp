@@ -56,6 +56,9 @@ void *ClientConnection::run()
     fds[1].fd = closeFdRead;
     fds[1].events = POLLIN;
 
+    // Tell the client that the server is ready.
+    sendReply(OK);
+
     while (!b_mustStop)
     {
         int rc = poll(fds, 2, timeout);
