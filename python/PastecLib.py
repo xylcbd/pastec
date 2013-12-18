@@ -96,7 +96,7 @@ class PastecConnection:
             raise PastecException("Image size too big.")
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
-        elif val != Reply.OK
+        elif val != Reply.OK:
             raise PastecException("Unkown returned code.")
 
     def imageQuery(self, imageData):
@@ -118,7 +118,7 @@ class PastecConnection:
             raise PastecException("Image size too big.")
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
-        elif val != Reply.OK
+        elif val != Reply.OK:
             raise PastecException("Unkown returned code.")
 
         # code == 1: We get a list of images.
