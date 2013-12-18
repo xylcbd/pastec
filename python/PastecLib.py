@@ -26,6 +26,11 @@ class PastecConnection:
     def connect(self, host="localhost", port=4212):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
+        val = self.waitForReply()
+        if val == Reply.TOO_MANY_CLIENTS:
+            raise PastecException("Too many clients connected to the server.")
+        elif val != Reply.OK:
+            raise PastecException("Unkown returned code.")
 
     def close(self):
         self.sock.close()
@@ -92,7 +97,7 @@ class PastecConnection:
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
         elif val != Reply.OK
-            raise PastecException("Unkown return code.")
+            raise PastecException("Unkown returned code.")
 
     def imageQuery(self, imageData):
         d = struct.pack("B", Query.SEARCH)
@@ -114,7 +119,7 @@ class PastecConnection:
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
         elif val != Reply.OK
-            raise PastecException("Unkown return code.")
+            raise PastecException("Unkown returned code.")
 
         # code == 1: We get a list of images.
 

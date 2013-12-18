@@ -4,6 +4,7 @@ class Reply():
     OK = 1
     ERROR_GENERIC = 2
     PONG = 3
+    TOO_MANY_CLIENTS = 4
     WRONG_MODE = 10
     IMAGE_DATA_TOO_BIG = 20
     IMAGE_NOT_INDEXED = 21

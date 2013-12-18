@@ -14,6 +14,7 @@
 #include "server.h"
 #include "datawriter.h"
 #include "clientconnection.h"
+#include "dataMessages.h"
 
 
 Server::Server(DataWriter *dataWriter,
@@ -22,6 +23,7 @@ Server::Server(DataWriter *dataWriter,
                ImageSearcher *imageSearcher,
                IndexMode *mode)
     : portNumber(4212),
+      i_curNbClients(0),
       dataWriter(dataWriter),
       backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor),
@@ -130,13 +132,31 @@ void *Server::run()
                         cout << "Error on accept." << endl;
                     cout << "Server: connect from host " << inet_ntoa(clientname.sin_addr)
                          << ", port " << ntohs(clientname.sin_port) << "." << endl;
-                    ClientConnection *c = new ClientConnection(newFd, dataWriter,
-                                                               backwardIndexBuilder,
-                                                               imageProcessor,
-                                                               imageSearcher,
-                                                               mode, this);
-                    c->start();
-                    clients.insert(c);
+
+                    pthread_mutex_lock(&clientsMutex);
+                    bool b_acceptClient = i_curNbClients < MAX_NB_CLIENTS ? true : false;
+                    pthread_mutex_unlock(&clientsMutex);
+
+                    if (b_acceptClient)
+                    {
+                        ClientConnection *c = new ClientConnection(newFd, dataWriter,
+                                                                   backwardIndexBuilder,
+                                                                   imageProcessor,
+                                                                   imageSearcher,
+                                                                   mode, this);
+                        c->start();
+
+                        pthread_mutex_lock(&clientsMutex);
+                        i_curNbClients++;
+                        clients.insert(c);
+                        pthread_mutex_unlock(&clientsMutex);
+                    }
+                    else
+                    {
+                        char p_msg[] = {TOO_MANY_CLIENTS};
+                        send(newFd, p_msg, sizeof(p_msg), 0);
+                        close(newFd);
+                    }
                 }
                 else
                 {
@@ -179,6 +199,7 @@ void Server::stop()
 void Server::removeClient(ClientConnection *c)
 {
     pthread_mutex_lock(&clientsMutex);
+    i_curNbClients--;
     clientsToRemove.push_back(c);
     pthread_mutex_unlock(&clientsMutex);
 }

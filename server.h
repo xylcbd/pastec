@@ -16,6 +16,9 @@ class IndexMode;
 using namespace std;
 
 
+#define MAX_NB_CLIENTS 30
+
+
 class Server : public Thread
 {
 public:
@@ -35,6 +38,7 @@ private:
 
     set<ClientConnection *> clients;
     list<ClientConnection *> clientsToRemove;
+    unsigned i_curNbClients;
 
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;
