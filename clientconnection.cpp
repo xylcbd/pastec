@@ -49,7 +49,7 @@ ClientConnection::~ClientConnection()
 void *ClientConnection::run()
 {
     /* Prepare the usage of poll */
-    int timeout = 3 * 60 * 1000;
+    int timeout = 30 * 1000; // 30 sec.
     struct pollfd fds[2];
     fds[0].fd = socketFd;
     fds[0].events = POLLIN;
