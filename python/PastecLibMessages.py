@@ -18,3 +18,4 @@ class Query():
     INDEX_IMAGE = 11
     PING = 20
     STOP = 30
+    SEARCH = 40

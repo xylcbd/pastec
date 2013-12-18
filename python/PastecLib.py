@@ -94,3 +94,44 @@ class PastecConnection:
         elif val != Reply.OK
             raise PastecException("Unkown return code.")
 
+    def imageQuery(self, imageData):
+        d = struct.pack("B", Query.SEARCH)
+        d += struct.pack("I", len(data))
+        d += data
+
+        self.sendData(d)
+
+        msg = b""
+        while len(msg) < 1:
+            msg += self.sock.recv(1024)
+
+        # Get the message code.
+        val = int.from_bytes(struct.unpack("c", msg[:1])[0], byteorder='little')
+        if val == Reply.IMAGE_DATA_TOO_BIG:
+            raise PastecException("Image data too big.")
+        elif val == Reply.IMAGE_SIZE_TOO_BIG:
+            raise PastecException("Image size too big.")
+        elif val == Reply.IMAGE_NOT_DECODED:
+            raise PastecException("The query image could not be decoded.")
+        elif val != Reply.OK
+            raise PastecException("Unkown return code.")
+
+        # code == 1: We get a list of images.
+
+        while len(msg) < 5:
+            msg += self.sock.recv(1024)
+
+        # Get the number of images.
+        nbImages = struct.unpack("I", msg[1:5])[0]
+        print("Got back " + str(nbImages) + " images.", file=sys.stderr)
+
+        # Receive all the message containing the ids of the images.
+        while len(msg) < 5 + nbImages * 4:
+            msg += s.recv(1024)
+
+        # Extract the image ids.
+        imageIds = []
+        for i in range(nbImages):
+            imageIds += [struct.unpack("I", msg[5 + 4 * i : 5 + 4 * (i + 1)])[0]]
+
+        return imageIds
