@@ -157,13 +157,6 @@ void ImageSearcher::searchImage(SearchRequest request)
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
-            //const Mat &word = descriptors.row(i);
-            /* If the word is at a too far hamming distance from the cell center, we consider
-             * that it is not relevant. */
-            /*unsigned i_dist = hammingDistanceCalculator.computeHammingDistance(indices[0], word);
-            if (i_dist > 12)
-                continue;*/
-
             /* If the word has a too large number of occurence in the index, we consider
              * that it is not relevant. */
             if (backwardIndex->getWordNbOccurences(indices[j]) > backwardIndex->getMaxNbRecords())
