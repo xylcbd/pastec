@@ -92,6 +92,7 @@ public:
             return false;
         }
         ifs.clear();
+        ifs.seekg(0, ios_base::beg);
 
         // Copy the file in memory.
         u_int64_t i = 0;
