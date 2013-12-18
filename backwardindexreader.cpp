@@ -8,8 +8,8 @@
 BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
 {
     // Open the file.
-    ifs.open(backwardIndexPath.c_str(), ios_base::binary);
-    if (!ifs.good())
+    indexAccess = new BackwardIndexReaderFileAccess();
+    if (!indexAccess->open(backwardIndexPath))
     {
         cout << "Could not open the backward index file." << endl;
         exit(1);
@@ -23,7 +23,7 @@ BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
     u_int64_t i_offset = NB_VISUAL_WORDS * sizeof(u_int64_t);
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
     {
-        ifs.read((char *)(nbOccurences + i), sizeof(u_int64_t));
+        indexAccess->read((char *)(nbOccurences + i), sizeof(u_int64_t));
         wordOffSet[i] = i_offset;
         i_offset += nbOccurences[i] * BACKWARD_INDEX_ENTRY_SIZE;
     }
@@ -31,14 +31,14 @@ BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
     /* Count the number of words per image. */
     cout << "Count the number of words per image." << endl;
     unsigned i_totalNbRecords = 0;
-    while (!ifs.eof())
+    while (!indexAccess->endOfIndex())
     {
         u_int32_t i_imageId;
         u_int16_t i_angle, x, y;
-        ifs.read((char *)&i_imageId, sizeof(u_int32_t));
-        ifs.read((char *)&i_angle, sizeof(u_int16_t));
-        ifs.read((char *)&x, sizeof(u_int16_t));
-        ifs.read((char *)&y, sizeof(u_int16_t));
+        indexAccess->read((char *)&i_imageId, sizeof(u_int32_t));
+        indexAccess->read((char *)&i_angle, sizeof(u_int16_t));
+        indexAccess->read((char *)&x, sizeof(u_int16_t));
+        indexAccess->read((char *)&y, sizeof(u_int16_t));
         nbWords[i_imageId]++;
         i_totalNbRecords++;
     }
@@ -51,7 +51,7 @@ BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
 
     cout << "Nb skipped words: " << i_nbSkipedWords << endl;
 
-    ifs.clear();
+    indexAccess->reset();
 }
 
 
@@ -70,6 +70,8 @@ BackwardIndexReader::~BackwardIndexReader()
 {
     delete[] wordOffSet;
     delete[] nbOccurences;
+    indexAccess->close();
+    delete indexAccess;
 }
 
 
@@ -82,7 +84,7 @@ void BackwardIndexReader::getImagesWithVisualWords(map<u_int32_t, list<Hit> > &i
          it != imagesReqHits.end(); ++it)
     {
         const unsigned i_wordId = it->first;
-        ifs.seekg(wordOffSet[i_wordId]);
+        indexAccess->moveAt(wordOffSet[i_wordId]);
         vector<Hit> &hits = indexHits[i_wordId];
 
         const unsigned i_nbOccurences = nbOccurences[i_wordId];
@@ -92,10 +94,10 @@ void BackwardIndexReader::getImagesWithVisualWords(map<u_int32_t, list<Hit> > &i
         {
             u_int32_t i_imageId;
             u_int16_t i_angle, x, y;
-            ifs.read((char *)&i_imageId, sizeof(u_int32_t));
-            ifs.read((char *)&i_angle, sizeof(u_int16_t));
-            ifs.read((char *)&x, sizeof(u_int16_t));
-            ifs.read((char *)&y, sizeof(u_int16_t));
+            indexAccess->read((char *)&i_imageId, sizeof(u_int32_t));
+            indexAccess->read((char *)&i_angle, sizeof(u_int16_t));
+            indexAccess->read((char *)&x, sizeof(u_int16_t));
+            indexAccess->read((char *)&y, sizeof(u_int16_t));
             hits[i].i_imageId = i_imageId;
             hits[i].i_angle = i_angle;
             hits[i].x = x;

@@ -11,6 +11,7 @@
 #include <list>
 
 #include "hit.h"
+#include "backwardindexreaderaccess.h"
 
 using namespace std;
 
@@ -31,13 +32,13 @@ public:
     unsigned getMaxNbRecords() const {return maxNbRecords;}
 
 private:
-    ifstream ifs;
-
     u_int64_t *wordOffSet;
     u_int64_t *nbOccurences;
     unsigned maxNbRecords;
 
     map<u_int64_t, unsigned> nbWords;
+
+    BackwardIndexReaderAccess *indexAccess;
 };
 
 #endif // BACKWARDINDEXREADER_H

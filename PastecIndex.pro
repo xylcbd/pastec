@@ -26,7 +26,8 @@ HEADERS += \
     hit.h \
     backwardindexreader.h \
     searchResult.h \
-    imagereranker.h
+    imagereranker.h \
+    backwardindexreaderaccess.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \
