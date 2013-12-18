@@ -9,6 +9,7 @@
 
 #include "imagesearcher.h"
 #include "clientconnection.h"
+#include "dataMessages.h"
 
 
 ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath)
@@ -105,24 +106,23 @@ void ImageSearcher::searchImage(SearchRequest request)
     {
         const char* err_msg = e.what();
         cout << "Exception caught: " << err_msg << endl;
-        //request.client->returnError();
+        request.client->sendReply(IMAGE_NOT_DECODED);
     }
 
     if (!img.data)
     {
         cout << "Error reading the image." << std::endl;
-        //request.client->returnError();
+        request.client->sendReply(IMAGE_NOT_DECODED);
     }
 
     unsigned i_imgWidth = img.cols;
     unsigned i_imgHeight = img.rows;
 
-
     if (i_imgWidth > 2000
         || i_imgHeight > 2000)
     {
         cout << "Image too large." << endl;
-        //request.client->returnError();
+        request.client->sendReply(IMAGE_SIZE_TOO_BIG);
     }
 
 #if 0

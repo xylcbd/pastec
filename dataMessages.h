@@ -22,6 +22,8 @@ enum Replies
     WRONG_MODE = 10,
     IMAGE_DATA_TOO_BIG = 20,
     IMAGE_NOT_INDEXED = 21,
+    IMAGE_SIZE_TOO_BIG = 22,
+    IMAGE_NOT_DECODED = 23,
 };
 
 #define MSG_INDEX_LEN 15
