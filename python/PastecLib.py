@@ -101,8 +101,8 @@ class PastecConnection:
 
     def imageQuery(self, imageData):
         d = struct.pack("B", Query.SEARCH)
-        d += struct.pack("I", len(data))
-        d += data
+        d += struct.pack("I", len(imageData))
+        d += imageData
 
         self.sendData(d)
 
