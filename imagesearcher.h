@@ -26,16 +26,16 @@ struct SearchRequest
 };
 
 
-class ImageSearcher
+class ImageSearcher : public Thread
 {
 public:
     ImageSearcher(string backwardIndexPath, string visualWordsPath);
-    void init();
-    void stop();
-    bool searchImage(SearchRequest request);
+    virtual ~ImageSearcher();
+    void queueRequest(SearchRequest request);
 
 private:
     void *run();
+    void searchImage(SearchRequest request);
     void returnResults(priority_queue<SearchResult> &rankedResults,
                        SearchRequest &req, unsigned i_maxNbResults);
     void writeResultsHTML(priority_queue<SearchResult> &rankedResults,
@@ -49,6 +49,11 @@ private:
 
     string backwardIndexPath;
     string visualWordsPath;
+
+    queue<SearchRequest> requests;
+
+    pthread_mutex_t mutex;
+    pthread_cond_t imageAvailable;
 
     Mat *words;
     flann::Index *myIndex;

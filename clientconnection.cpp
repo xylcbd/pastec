@@ -205,7 +205,7 @@ void ClientConnection::parseMessages()
                 sendReply(ERROR_GENERIC);
                 return;
             }
-            imageSearcher->init();
+            imageSearcher->start();
 
             sendReply(OK);
 
@@ -298,7 +298,7 @@ void ClientConnection::parseMessages()
             req.imageData.resize(i_imageSize);
             req.client = this;
             memcpy((void *)&req.imageData[0], p + 5, i_imageSize);
-            imageSearcher->searchImage(req);
+            imageSearcher->queueRequest(req);
 
             assert(i_msgSize >= buf.length);
             memmove(p, p + i_msgSize, buf.length - i_msgSize);
@@ -377,7 +377,7 @@ bool ClientConnection::closeCurrentMode()
             b_ret = false;
         break;
     case SEARCH_MODE:
-        imageSearcher->stop();
+        imageSearcher->join();
         break;
     default:
         assert(0);

@@ -14,13 +14,24 @@
 
 ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath)
     : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath)
-{ }
+{
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&imageAvailable, NULL);
+}
+
+
+ImageSearcher::~ImageSearcher()
+{
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&imageAvailable);
+}
 
 
 /**
- * @brief Init the image searcher.
+ * @brief ImageSearcher main thread.
+ * @return a null pointer.
  */
-void ImageSearcher::init()
+void *ImageSearcher::run()
 {
     backwardIndex = new BackwardIndexReader(backwardIndexPath);
 
@@ -37,21 +48,49 @@ void ImageSearcher::init()
     myIndex = new flann::Index(*words, flann::KDTreeIndexParams());
 
     cout << "Ready to accept search queries." << endl;
+
+    while (!b_mustStop)
+    {
+        pthread_mutex_lock(&mutex);
+        if (requests.empty())
+        {
+            pthread_cond_wait(&imageAvailable, &mutex);
+            if (requests.empty())
+                continue;
+        }
+
+        SearchRequest request = requests.front();
+        requests.pop();
+
+        pthread_mutex_unlock(&mutex);
+
+        searchImage(request);
+    }
+
+    delete myIndex;
+    delete words;
+    delete backwardIndex;
+
+    return NULL;
 }
 
 
 /**
- * @brief Stop the image searcher.
+ * @brief Add an image in the processing queue for being searched.
+ * @param hit the hit to write.
  */
-void ImageSearcher::stop()
+void ImageSearcher::queueRequest(SearchRequest request)
 {
-    delete myIndex;
-    delete words;
-    delete backwardIndex;
+    pthread_mutex_lock(&mutex);
+
+    requests.push(request);
+    pthread_cond_signal(&imageAvailable);
+
+    pthread_mutex_unlock(&mutex);
 }
 
 
-bool ImageSearcher::searchImage(SearchRequest request)
+void ImageSearcher::searchImage(SearchRequest request)
 {
     timeval t[5];
     gettimeofday(&t[0], NULL);
@@ -68,14 +107,12 @@ bool ImageSearcher::searchImage(SearchRequest request)
         const char* err_msg = e.what();
         cout << "Exception caught: " << err_msg << endl;
         request.client->sendReply(IMAGE_NOT_DECODED);
-        return false;
     }
 
     if (!img.data)
     {
         cout << "Error reading the image." << std::endl;
         request.client->sendReply(IMAGE_NOT_DECODED);
-        return false;
     }
 
     unsigned i_imgWidth = img.cols;
@@ -86,7 +123,6 @@ bool ImageSearcher::searchImage(SearchRequest request)
     {
         cout << "Image too large." << endl;
         request.client->sendReply(IMAGE_SIZE_TOO_BIG);
-        return false;
     }
 
 #if 0
@@ -196,8 +232,6 @@ bool ImageSearcher::searchImage(SearchRequest request)
     // Show the image.
     imshow("Keypoints 1", img_res);
 #endif
-
-    return true;
 }
 
 
