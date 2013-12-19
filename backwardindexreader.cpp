@@ -43,7 +43,7 @@ BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
         i_totalNbRecords++;
     }
 
-    maxNbRecords = 0.0001 * i_totalNbRecords;
+    maxNbRecords = 0.00001 * i_totalNbRecords;
     unsigned i_nbSkipedWords = 0;
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
         if (nbOccurences[i] > maxNbRecords)
