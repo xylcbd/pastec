@@ -204,13 +204,14 @@ void ImageSearcher::searchImage(SearchRequest request)
     }
 
     priority_queue<SearchResult> rankedResults;
-    for (map<unsigned, float>::iterator it = weights.begin();
+    for (map<unsigned, float>::const_iterator it = weights.begin();
          it != weights.end(); ++it)
-        rankedResults.push(SearchResult(it->second, it->first));
+        if (it->second > 0)
+            rankedResults.push(SearchResult(it->second, it->first));
 
     gettimeofday(&t[3], NULL);
     cout << "time: " << getTimeDiff(t[2], t[3]) << " ms." << endl;
-    cout << "Reranking " << weights.size() << " images." << endl;
+    cout << "Reranking 300 among " << rankedResults.size() << " images." << endl;
 
     priority_queue<SearchResult> rerankedResults;
     reranker.rerankRANSAC(imageReqHits, indexHits,
