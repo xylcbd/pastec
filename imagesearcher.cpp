@@ -206,8 +206,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     priority_queue<SearchResult> rankedResults;
     for (map<unsigned, float>::const_iterator it = weights.begin();
          it != weights.end(); ++it)
-        if (it->second > 0)
-            rankedResults.push(SearchResult(it->second, it->first));
+        rankedResults.push(SearchResult(it->second, it->first));
 
     gettimeofday(&t[3], NULL);
     cout << "time: " << getTimeDiff(t[2], t[3]) << " ms." << endl;
