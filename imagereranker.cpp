@@ -186,7 +186,7 @@ void *RANSACThread::run()
                 if (mask.at<uchar>(0, i) == 1)
                     i_nbInliners++;
 
-            if (i_nbInliners >= 6)
+            if (i_nbInliners >= 7)
             {
                 pthread_mutex_lock(p_resultsMutex);
                 rankedResultsOut.push(SearchResult(i_nbInliners, i_imageId));
