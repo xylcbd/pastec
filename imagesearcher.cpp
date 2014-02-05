@@ -253,6 +253,7 @@ void ImageSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
         const SearchResult &res = rankedResults.top();
         imageIds.push_back(res.i_imageId);
         i_res++;
+        cout << "Id: " << res.i_imageId << ", score: " << res.f_weight << endl;
         rankedResults.pop();
     }
 
