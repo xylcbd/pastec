@@ -29,7 +29,8 @@ struct SearchRequest
 class ImageSearcher : public Thread
 {
 public:
-    ImageSearcher(string backwardIndexPath, string visualWordsPath);
+    ImageSearcher(string backwardIndexPath, string visualWordsPath,
+                  string indexPath);
     virtual ~ImageSearcher();
     void queueRequest(SearchRequest request);
 
@@ -49,6 +50,7 @@ private:
 
     string backwardIndexPath;
     string visualWordsPath;
+    string indexPath;
 
     queue<SearchRequest> requests;
 

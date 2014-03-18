@@ -16,7 +16,8 @@ int main(int argc, char** argv)
 
     if (argc < 2)
     {
-        cout << "./ImageIndexer visualWords" << endl;
+        cout << "Usage :" << endl
+             << "./ImageIndexer visualWords index" << endl;
         return 1;
     }
 
@@ -24,7 +25,8 @@ int main(int argc, char** argv)
     ImageProcessor *ip = new ImageProcessor(dw, string(argv[1]));
     BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
                                                          "backwardIndex.dat");
-    ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]));
+    ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]),
+                                          string(argv[2]));
     IndexMode mode;
     Server *s = new Server(dw, bib, ip, is, &mode);
 

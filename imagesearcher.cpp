@@ -12,8 +12,10 @@
 #include "dataMessages.h"
 
 
-ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath)
-    : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath)
+ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath,
+                             string indexPath)
+    : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath),
+      indexPath(indexPath)
 {
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&imageAvailable, NULL);
@@ -45,7 +47,8 @@ void *ImageSearcher::run()
     assert(words->rows == 1000000);
 
     cout << "Building the kd-trees." << endl;
-    myIndex = new flann::Index(*words, flann::KDTreeIndexParams());
+    // myIndex = new flann::Index(*words, flann::KDTreeIndexParams());
+    myIndex = new flann::Index(*words, flann::SavedIndexParams(indexPath));
 
     cout << "Ready to accept search queries." << endl;
 
