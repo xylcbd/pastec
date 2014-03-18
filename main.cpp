@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     cout << "Pastec Index v0.0.1" << endl;
 
-    if (argc < 2)
+    if (argc < 3)
     {
         cout << "Usage :" << endl
              << "./ImageIndexer visualWords index" << endl;
