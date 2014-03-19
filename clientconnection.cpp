@@ -10,13 +10,13 @@
 #include "dataMessages.h"
 #include "server.h"
 #include "indexmode.h"
-#include "imageprocessor.h"
+#include "imagefeatureextractor.h"
 #include "imagesearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd, DataWriter *dataWriter,
                                    BackwardIndexBuilder *backwardIndexBuilder,
-                                   ImageProcessor *imageProcessor,
+                                   ImageFeatureExtractor *imageProcessor,
                                    ImageSearcher *imageSearcher,
                                    IndexMode *mode, Server *server)
     : socketFd(socketFd), dataWriter(dataWriter),

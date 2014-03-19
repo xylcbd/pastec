@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     }
 
     DataWriter *dw = new DataWriter("forwardIndex.dat");
-    ImageProcessor *ip = new ImageProcessor(string(argv[1]), string(argv[2]));
+    ImageFeatureExtractor *ip = new ImageFeatureExtractor(string(argv[1]), string(argv[2]));
     BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
                                                          "backwardIndex.dat");
     ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]),

@@ -8,10 +8,10 @@ SOURCES += main.cpp \
     datawriter.cpp \
     clientconnection.cpp \
     backwardindexbuilder.cpp \
-    imageprocessor.cpp \
     imagesearcher.cpp \
     backwardindexreader.cpp \
-    imagereranker.cpp
+    imagereranker.cpp \
+    imagefeatureextractor.cpp
 
 HEADERS += \
     server.h \
@@ -21,13 +21,13 @@ HEADERS += \
     clientconnection.h \
     backwardindexbuilder.h \
     indexmode.h \
-    imageprocessor.h \
     imagesearcher.h \
     hit.h \
     backwardindexreader.h \
     searchResult.h \
     imagereranker.h \
-    backwardindexreaderaccess.h
+    backwardindexreaderaccess.h \
+    imagefeatureextractor.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \

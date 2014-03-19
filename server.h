@@ -9,7 +9,7 @@
 class ClientConnection;
 class DataWriter;
 class BackwardIndexBuilder;
-class ImageProcessor;
+class ImageFeatureExtractor;
 class ImageSearcher;
 class IndexMode;
 
@@ -24,7 +24,7 @@ class Server : public Thread
 public:
     Server(DataWriter *dataWriter,
            BackwardIndexBuilder *backwardIndexBuilder,
-           ImageProcessor *imageProcessor,
+           ImageFeatureExtractor *imageProcessor,
            ImageSearcher *imageSearcher,
            IndexMode *mode);
     virtual ~Server();
@@ -42,7 +42,7 @@ private:
 
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;
-    ImageProcessor *imageProcessor;
+    ImageFeatureExtractor *imageProcessor;
     ImageSearcher *imageSearcher;
     IndexMode *mode;
 

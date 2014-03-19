@@ -8,7 +8,7 @@
 
 class Server;
 class IndexMode;
-class ImageProcessor;
+class ImageFeatureExtractor;
 class ImageSearcher;
 
 
@@ -26,7 +26,7 @@ class ClientConnection : public Thread
 public:
     ClientConnection(int socketFd, DataWriter *dataWriter,
                      BackwardIndexBuilder *backwardIndexBuilder,
-                     ImageProcessor *imageProcessor,
+                     ImageFeatureExtractor *imageProcessor,
                      ImageSearcher *imageSearcher,
                      IndexMode *mode, Server *server);
     virtual ~ClientConnection();
@@ -46,7 +46,7 @@ private:
     Buffer buf;
     DataWriter *dataWriter;
     BackwardIndexBuilder *backwardIndexBuilder;
-    ImageProcessor *imageProcessor;
+    ImageFeatureExtractor *imageProcessor;
     ImageSearcher *imageSearcher;
     IndexMode *mode;
     Server *server;

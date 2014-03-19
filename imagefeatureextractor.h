@@ -1,22 +1,26 @@
 #ifndef IMAGEPROCESSOR_H
 #define IMAGEPROCESSOR_H
 
+#include <iostream>
+#include <fstream>
 #include <list>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 
-class DataWriter;
+#include "datawriter.h"
+
 class ClientConnection;
 
 
 using namespace cv;
+using namespace std;
 
 
-class ImageProcessor
+class ImageFeatureExtractor
 {
 public:
-    ImageProcessor(String visualWordsPath, String indexPath);
+    ImageFeatureExtractor(String visualWordsPath, String indexPath);
     void init();
     void stop();
 
@@ -24,10 +28,12 @@ public:
                          char *p_imgData, ClientConnection *p_client);
 
 private:
+    bool openHitFile(ofstream &ofs, unsigned i_imageId);
+    bool writeHit(ofstream &ofs, HitForward hit);
     bool readVisualWords(string fileName);
 
-    DataWriter *dataWriter;
     String visualWordsPath;
+    String indexPath;
     Mat *words;  // The matrix that stores the visual words.
     flann::Index *index; // The kd-tree index.
 };

@@ -1,25 +1,20 @@
 #include <iostream>
-#include <fstream>
-
 #include <set>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "imageprocessor.h"
-#include "datawriter.h"
+#include "imagefeatureextractor.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
 
-using namespace std;
 
-
-ImageProcessor::ImageProcessor(String visualWordsPath, String indexPath)
+ImageFeatureExtractor::ImageFeatureExtractor(String visualWordsPath, String indexPath)
     : visualWordsPath(visualWordsPath), indexPath(indexPath)
 { }
 
 
-void ImageProcessor::init()
+void ImageFeatureExtractor::init()
 {
     words = new Mat(0, 128, CV_32F); // The matrix that stores the visual words.
 
@@ -33,14 +28,14 @@ void ImageProcessor::init()
 }
 
 
-void ImageProcessor::stop()
+void ImageFeatureExtractor::stop()
 {
     delete words;
     delete index;
 }
 
 
-bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
+bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
                                      char *p_imgData, ClientConnection *p_client)
 {
     vector<char> imgData(i_imgSize);
@@ -93,6 +88,16 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
     SIFT()(img, noArray(), keypoints, descriptors);
 
     // Output the SIFT keypoints to the database.
+
+    // TODO: create the imageHits directory if it does not exist.
+
+    ofstream ofs;
+    if (!openHitFile(ofs, i_imageId))
+    {
+        p_client->sendReply(ERROR_GENERIC);
+        return false;
+    }
+
     unsigned i_nbKeyPoints = 0;
     vector<KeyPoint> cleanKeypoints;
     for (unsigned i = 0; i < keypoints.size(); ++i)
@@ -117,10 +122,17 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
             newHit.i_angle = angle;
             newHit.x = x;
             newHit.y = y;
-            dataWriter->queueHit(newHit);
+            // Write the hit in the file.
+            if (!writeHit(ofs, newHit))
+            {
+                ofs.close();
+                p_client->sendReply(ERROR_GENERIC);
+                return false;
+            }
         }
     }
 
+    ofs.close();
     std::cout << "Nb SIFTs: " << i_nbKeyPoints << std::endl;
 
 #if 0
@@ -140,12 +152,59 @@ bool ImageProcessor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
 
 
 /**
+ * @brief Open the file that will contain all hits of the image.
+ * @param i_imageId the image id.
+ * @return true on success else false.
+ */
+bool ImageFeatureExtractor::openHitFile(ofstream &ofs, unsigned i_imageId)
+{
+    stringstream fileNameStream;
+    fileNameStream << "imageHits/" << i_imageId << ".dat";
+
+    ofs.open(fileNameStream.str().c_str(), ios_base::binary);
+
+    if (!ofs.good())
+    {
+        cout << "Could not open the hit output file." << endl;
+        ofs.close();
+        return false;
+    }
+
+    return true;
+}
+
+
+/**
+ * @brief Write a new hit in the file.
+ * @param hit the new hit to write.
+ * @param ofs the output file stream.
+ * @return true on success else false.
+ */
+bool ImageFeatureExtractor::writeHit(ofstream &ofs, HitForward hit)
+{
+    if (!ofs.good())
+    {
+        cout << "Could not write to the output file." << endl;
+        return false;
+    }
+
+    ofs.write((char *)&hit.i_wordId, sizeof(u_int32_t));
+    ofs.write((char *)&hit.i_imageId, sizeof(u_int32_t));
+    ofs.write((char *)&hit.i_angle, sizeof(u_int16_t));
+    ofs.write((char *)&hit.x, sizeof(u_int16_t));
+    ofs.write((char *)&hit.y, sizeof(u_int16_t));
+
+    return true;
+}
+
+
+/**
  * @brief Read the list of visual words from an external file.
  * @param fileName the path of the input file name.
  * @param words a pointer to a matrix to store the words.
  * @return true on success else false.
  */
-bool ImageProcessor::readVisualWords(string fileName)
+bool ImageFeatureExtractor::readVisualWords(string fileName)
 {
     cout << "Reading the visual words file." << endl;
 

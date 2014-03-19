@@ -19,7 +19,7 @@
 
 Server::Server(DataWriter *dataWriter,
                BackwardIndexBuilder *backwardIndexBuilder,
-               ImageProcessor *imageProcessor,
+               ImageFeatureExtractor *imageProcessor,
                ImageSearcher *imageSearcher,
                IndexMode *mode)
     : portNumber(4212),
