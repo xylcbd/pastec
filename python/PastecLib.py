@@ -107,7 +107,7 @@ class PastecConnection:
             msg += self.sock.recv(1024)
 
         # Get the message code.
-        val = self.waitForReply()
+        val = int.from_bytes(struct.unpack("c", msg[:1])[0], byteorder='little')
         self.raiseExceptionIfNeeded(val)
 
         # code == 1: We get a list of images.
