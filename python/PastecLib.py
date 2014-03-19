@@ -27,10 +27,7 @@ class PastecConnection:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
         val = self.waitForReply()
-        if val == Reply.TOO_MANY_CLIENTS:
-            raise PastecException("Too many clients connected to the server.")
-        elif val != Reply.OK:
-            raise PastecException("Unkown returned code.")
+        self.raiseExceptionIfNeeded(val)
 
     def close(self):
         self.sock.close()
@@ -46,22 +43,19 @@ class PastecConnection:
         d = struct.pack("B", Query.INIT_BUILD_FORWARD_INDEX)
         self.sendData(d)
         val = self.waitForReply()
-        if val != Reply.OK:
-            raise PastecException("Could not start forward index building.")
-            
+        self.raiseExceptionIfNeeded(val)
+
     def buildBackwardIndex(self):
         d = struct.pack("B", Query.BUILD_BACKWARD_INDEX)
         self.sendData(d)
         val = self.waitForReply()
-        if val != Reply.OK:
-            raise PastecException("Could not build backward index.")
+        self.raiseExceptionIfNeeded(val)
 
     def initSearch(self):
         d = struct.pack("B", Query.INIT_SEARCH)
         self.sendData(d)
         val = self.waitForReply()
-        if val != Reply.OK:
-            raise PastecException("Could not start the searching mode.")
+        self.raiseExceptionIfNeeded(val)
 
     def stopServer(self):
         d = struct.pack("B", Query.STOP)
@@ -90,14 +84,7 @@ class PastecConnection:
         self.sendData(d)
 
         val = self.waitForReply()
-        if val == Reply.IMAGE_DATA_TOO_BIG:
-            raise PastecException("Image data too big.")
-        elif val == Reply.IMAGE_SIZE_TOO_BIG:
-            raise PastecException("Image size too big.")
-        elif val == Reply.IMAGE_NOT_DECODED:
-            raise PastecException("The query image could not be decoded.")
-        elif val != Reply.OK:
-            raise PastecException("Unkown returned code.")
+        self.raiseExceptionIfNeeded(val)
 
     def imageQuery(self, imageData):
         d = struct.pack("B", Query.SEARCH)
@@ -111,15 +98,8 @@ class PastecConnection:
             msg += self.sock.recv(1024)
 
         # Get the message code.
-        val = int.from_bytes(struct.unpack("c", msg[:1])[0], byteorder='little')
-        if val == Reply.IMAGE_DATA_TOO_BIG:
-            raise PastecException("Image data too big.")
-        elif val == Reply.IMAGE_SIZE_TOO_BIG:
-            raise PastecException("Image size too big.")
-        elif val == Reply.IMAGE_NOT_DECODED:
-            raise PastecException("The query image could not be decoded.")
-        elif val != Reply.OK:
-            raise PastecException("Unkown returned code.")
+        val = self.waitForReply()
+        self.raiseExceptionIfNeeded(val)
 
         # code == 1: We get a list of images.
 
@@ -139,3 +119,19 @@ class PastecConnection:
             imageIds += [struct.unpack("I", msg[5 + 4 * i : 5 + 4 * (i + 1)])[0]]
 
         return imageIds
+
+    def raiseExceptionIfNeeded(self, val):
+        if val == Reply.OK:
+            return
+        elif val == Reply.ERROR_GENERIC:
+            raise PastecException("Generic error.")
+        elif val == Reply.TOO_MANY_CLIENTS:
+            raise PastecException("Too many clients connected to the server.")
+        if val == Reply.IMAGE_DATA_TOO_BIG:
+            raise PastecException("Image data too big.")
+        elif val == Reply.IMAGE_SIZE_TOO_BIG:
+            raise PastecException("Image size too big.")
+        elif val == Reply.IMAGE_NOT_DECODED:
+            raise PastecException("The query image could not be decoded.")
+        else:
+            raise PastecException("Unkown error code.")
