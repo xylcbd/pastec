@@ -14,14 +14,14 @@
 #include "imagesearcher.h"
 
 
-ClientConnection::ClientConnection(int socketFd, DataWriter *dataWriter,
+ClientConnection::ClientConnection(int socketFd, ForwardIndexBuilder *forwardIndexBuilder,
                                    BackwardIndexBuilder *backwardIndexBuilder,
                                    ImageFeatureExtractor *imageProcessor,
                                    ImageSearcher *imageSearcher,
                                    IndexMode *mode, Server *server)
-    : socketFd(socketFd), dataWriter(dataWriter),
+    : socketFd(socketFd), forwardIndexBuilder(forwardIndexBuilder),
       backwardIndexBuilder(backwardIndexBuilder),
-      imageProcessor(imageProcessor),
+      imageFeatureExtractor(imageProcessor),
       imageSearcher(imageSearcher),
       mode(mode), server(server)
 {
@@ -168,7 +168,7 @@ void ClientConnection::parseMessages()
     {
         switch (buf.data[0])
         {
-        case INIT_BUILD_FORWARD_INDEX:
+        case BUILD_FORWARD_INDEX:
         {
             if (!closeCurrentMode())
             {
@@ -176,13 +176,24 @@ void ClientConnection::parseMessages()
                 return;
             }
             mode->mode = BUILD_FORWARD_INDEX_MODE;
-            imageProcessor->init();
-            dataWriter->start();
 
-            sendReply(OK);
+            if (buf.length < MSG_BUILD_FORWARD_INDEX_LEN)
+                return; // The complete message was not received.
 
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
+            unsigned i_nbImages = *(u_int32_t *)(p + 1);
+            unsigned i_msgSize = MSG_BUILD_FORWARD_INDEX_LEN + i_nbImages * 4;
+
+            // Test if we have received all the image data.
+            if (buf.length < i_msgSize)
+                return;
+
+            if (forwardIndexBuilder->build(i_nbImages, p + MSG_BUILD_FORWARD_INDEX_LEN))
+                sendReply(OK);
+            else
+                sendReply(ERROR_GENERIC);
+
+            memmove(p, p + i_msgSize, buf.length - i_msgSize);
+            buf.length -= i_msgSize;
             break;
         }
         case BUILD_BACKWARD_INDEX:
@@ -201,13 +212,14 @@ void ClientConnection::parseMessages()
             buf.length -= 1;
             break;
         }
-        case SEARCH_MODE:
+        case INIT_SEARCH:
         {
             if (!closeCurrentMode())
             {
                 sendReply(ERROR_GENERIC);
                 return;
             }
+            mode->mode = SEARCH_MODE;
             imageSearcher->start();
 
             sendReply(OK);
@@ -216,33 +228,25 @@ void ClientConnection::parseMessages()
             buf.length -= 1;
             break;
         }
-        case INDEX:
+        case INIT_IMAGE_FEATURE_EXTRACTOR:
         {
-            if (mode->mode != BUILD_FORWARD_INDEX_MODE)
+            if (!closeCurrentMode())
             {
-                sendReply(WRONG_MODE);
+                sendReply(ERROR_GENERIC);
                 return;
             }
+            mode->mode = IMAGE_FEATURE_EXTRACTOR_MODE;
+            imageFeatureExtractor->init();
 
-            if (buf.length < MSG_INDEX_LEN)
-                return; // The complete message was not received.
+            sendReply(OK);
 
-            HitForward newHit;
-            newHit.i_wordId = *(u_int32_t *)(p + 1);
-            newHit.i_imageId = *(u_int32_t *)(p + 5);
-            newHit.i_angle = *(u_int16_t *)(p + 9);
-            newHit.x = *(u_int16_t *)(p + 11);
-            newHit.y = *(u_int16_t *)(p + 13);
-            /* Check the current mode of the index. */
-            if (mode->mode == BUILD_FORWARD_INDEX_MODE)
-                dataWriter->queueHit(newHit);
-            memmove(p, p + MSG_INDEX_LEN, buf.length - MSG_INDEX_LEN);
-            buf.length -= MSG_INDEX_LEN;
+            memmove(p, p + 1, buf.length - 1);
+            buf.length -= 1;
             break;
         }
         case INDEX_IMAGE:
         {
-            if (mode->mode != BUILD_FORWARD_INDEX_MODE)
+            if (mode->mode != IMAGE_FEATURE_EXTRACTOR_MODE)
             {
                 sendReply(WRONG_MODE);
                 return;
@@ -266,7 +270,7 @@ void ClientConnection::parseMessages()
             if (buf.length < i_msgSize)
                 return;
 
-            imageProcessor->processNewImage(i_imageId, i_imageSize,
+            imageFeatureExtractor->processNewImage(i_imageId, i_imageSize,
                                             p + MSG_INDEX_IMAGE_HEADER_LEN, this);
 
             memmove(p, p + i_msgSize, buf.length - i_msgSize);
@@ -372,8 +376,6 @@ bool ClientConnection::closeCurrentMode()
     case NO_MODE:
         break;
     case BUILD_FORWARD_INDEX_MODE:
-        dataWriter->stop();
-        imageProcessor->stop();
         break;
     case BUILD_BACKWARD_INDEX_MODE:
         if (!backwardIndexBuilder->hasFinished())
@@ -381,6 +383,9 @@ bool ClientConnection::closeCurrentMode()
         break;
     case SEARCH_MODE:
         imageSearcher->join();
+        break;
+    case IMAGE_FEATURE_EXTRACTOR_MODE:
+        imageFeatureExtractor->stop();
         break;
     default:
         assert(0);

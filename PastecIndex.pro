@@ -5,18 +5,17 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     server.cpp \
-    datawriter.cpp \
     clientconnection.cpp \
     backwardindexbuilder.cpp \
     imagesearcher.cpp \
     backwardindexreader.cpp \
     imagereranker.cpp \
-    imagefeatureextractor.cpp
+    imagefeatureextractor.cpp \
+    forwardindexbuilder.cpp
 
 HEADERS += \
     server.h \
     thread.h \
-    datawriter.h \
     dataMessages.h \
     clientconnection.h \
     backwardindexbuilder.h \
@@ -27,7 +26,8 @@ HEADERS += \
     searchResult.h \
     imagereranker.h \
     backwardindexreaderaccess.h \
-    imagefeatureextractor.h
+    imagefeatureextractor.h \
+    forwardindexbuilder.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \

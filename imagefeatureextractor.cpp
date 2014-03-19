@@ -30,6 +30,7 @@ void ImageFeatureExtractor::init()
 
 void ImageFeatureExtractor::stop()
 {
+    // TODO: add a mutex to be sure that we can kill this module.
     delete words;
     delete index;
 }

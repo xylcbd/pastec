@@ -8,7 +8,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 
-#include "datawriter.h"
+#include "forwardindexbuilder.h"
 
 class ClientConnection;
 

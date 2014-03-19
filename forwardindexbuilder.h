@@ -21,23 +21,15 @@ struct HitForward
 };
 
 
-class DataWriter : public Thread
+class ForwardIndexBuilder
 {
 public:
-    DataWriter(string fileName);
-    virtual ~DataWriter();
-    void queueHit(HitForward hit);
-    void stop();
+    ForwardIndexBuilder(string fileName);
+    bool build(unsigned i_nbImages, char *p_imageIds);
 
 private:
-    void *run();
-    bool writeToFile(HitForward hit);
-    void closeFile();
+    bool addImage(unsigned i_imageId);
 
-    pthread_mutex_t mutex;
-    pthread_cond_t hitAvailable;
-
-    queue<HitForward> hits;
     ofstream ofs;
 
     string fileName;

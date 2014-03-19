@@ -7,7 +7,7 @@
 #include "thread.h"
 
 class ClientConnection;
-class DataWriter;
+class ForwardIndexBuilder;
 class BackwardIndexBuilder;
 class ImageFeatureExtractor;
 class ImageSearcher;
@@ -22,7 +22,7 @@ using namespace std;
 class Server : public Thread
 {
 public:
-    Server(DataWriter *dataWriter,
+    Server(ForwardIndexBuilder *forwardIndexBuilder,
            BackwardIndexBuilder *backwardIndexBuilder,
            ImageFeatureExtractor *imageProcessor,
            ImageSearcher *imageSearcher,
@@ -40,7 +40,7 @@ private:
     list<ClientConnection *> clientsToRemove;
     unsigned i_curNbClients;
 
-    DataWriter *dataWriter;
+    ForwardIndexBuilder *forwardIndexBuilder;
     BackwardIndexBuilder *backwardIndexBuilder;
     ImageFeatureExtractor *imageProcessor;
     ImageSearcher *imageSearcher;

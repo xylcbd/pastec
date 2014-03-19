@@ -39,8 +39,11 @@ class PastecConnection:
         val = struct.unpack("B", d)[0]
         return val
 
-    def initBuildForwardIndex(self):
-        d = struct.pack("B", Query.INIT_BUILD_FORWARD_INDEX)
+    def buildForwardIndex(self, images):
+        d = struct.pack("B", Query.BUILD_FORWARD_INDEX)
+        d += struct.pack("I", len(images))
+        for image in images:
+            d += struct.pack("I", image)
         self.sendData(d)
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
@@ -53,6 +56,12 @@ class PastecConnection:
 
     def initSearch(self):
         d = struct.pack("B", Query.INIT_SEARCH)
+        self.sendData(d)
+        val = self.waitForReply()
+        self.raiseExceptionIfNeeded(val)
+
+    def initImageFeatureExtractor(self):
+        d = struct.pack("B", Query.INIT_IMAGE_FEATURE_EXTRACTOR)
         self.sendData(d)
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
@@ -127,6 +136,8 @@ class PastecConnection:
             raise PastecException("Generic error.")
         elif val == Reply.TOO_MANY_CLIENTS:
             raise PastecException("Too many clients connected to the server.")
+        elif val == Reply.WRONG_MODE:
+            raise PastecException("Index not in the right mode for this command.")
         if val == Reply.IMAGE_DATA_TOO_BIG:
             raise PastecException("Image data too big.")
         elif val == Reply.IMAGE_SIZE_TOO_BIG:

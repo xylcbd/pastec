@@ -2,7 +2,7 @@
 #define CLIENTCONNECTION_H
 
 #include "thread.h"
-#include "datawriter.h"
+#include "forwardindexbuilder.h"
 #include "backwardindexbuilder.h"
 
 
@@ -24,9 +24,9 @@ struct Buffer
 class ClientConnection : public Thread
 {
 public:
-    ClientConnection(int socketFd, DataWriter *dataWriter,
+    ClientConnection(int socketFd, ForwardIndexBuilder *forwardIndexBuilder,
                      BackwardIndexBuilder *backwardIndexBuilder,
-                     ImageFeatureExtractor *imageProcessor,
+                     ImageFeatureExtractor *imageFeatureExtractor,
                      ImageSearcher *imageSearcher,
                      IndexMode *mode, Server *server);
     virtual ~ClientConnection();
@@ -44,9 +44,9 @@ private:
     int closeFd;
     int closeFdRead;
     Buffer buf;
-    DataWriter *dataWriter;
+    ForwardIndexBuilder *forwardIndexBuilder;
     BackwardIndexBuilder *backwardIndexBuilder;
-    ImageFeatureExtractor *imageProcessor;
+    ImageFeatureExtractor *imageFeatureExtractor;
     ImageSearcher *imageSearcher;
     IndexMode *mode;
     Server *server;

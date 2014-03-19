@@ -12,19 +12,19 @@
 #include <iostream>
 
 #include "server.h"
-#include "datawriter.h"
+#include "forwardindexbuilder.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
 
 
-Server::Server(DataWriter *dataWriter,
+Server::Server(ForwardIndexBuilder *forwardIndexBuilder,
                BackwardIndexBuilder *backwardIndexBuilder,
                ImageFeatureExtractor *imageProcessor,
                ImageSearcher *imageSearcher,
                IndexMode *mode)
     : portNumber(4212),
       i_curNbClients(0),
-      dataWriter(dataWriter),
+      forwardIndexBuilder(forwardIndexBuilder),
       backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor),
       imageSearcher(imageSearcher),
@@ -139,7 +139,7 @@ void *Server::run()
 
                     if (b_acceptClient)
                     {
-                        ClientConnection *c = new ClientConnection(newFd, dataWriter,
+                        ClientConnection *c = new ClientConnection(newFd, forwardIndexBuilder,
                                                                    backwardIndexBuilder,
                                                                    imageProcessor,
                                                                    imageSearcher,
@@ -176,8 +176,6 @@ void *Server::run()
         (*it)->stop();
         delete *it;
     }
-
-    dataWriter->stop();
 
     return NULL;
 }

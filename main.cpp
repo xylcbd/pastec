@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "server.h"
-#include "datawriter.h"
+#include "forwardindexbuilder.h"
 #include "backwardindexbuilder.h"
-#include "imageprocessor.h"
+#include "imagefeatureextractor.h"
 #include "imagesearcher.h"
 #include "indexmode.h"
 
@@ -21,20 +21,20 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DataWriter *dw = new DataWriter("forwardIndex.dat");
-    ImageFeatureExtractor *ip = new ImageFeatureExtractor(string(argv[1]), string(argv[2]));
+    ForwardIndexBuilder *fib = new ForwardIndexBuilder("forwardIndex.dat");
+    ImageFeatureExtractor *ife = new ImageFeatureExtractor(string(argv[1]), string(argv[2]));
     BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
                                                          "backwardIndex.dat");
     ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]),
                                           string(argv[2]));
     IndexMode mode;
-    Server *s = new Server(dw, bib, ip, is, &mode);
+    Server *s = new Server(fib, bib, ife, is, &mode);
 
     s->start();
 
     s->join();
 
-    delete dw;
+    delete fib;
     delete bib;
     delete s;
 
