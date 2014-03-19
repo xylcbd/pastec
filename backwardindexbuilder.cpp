@@ -135,6 +135,9 @@ void BackwardIndexBuilder::writeIndex()
 
 void BackwardIndexBuilder::writeIndexBucket(unsigned i_nbHits)
 {
+    if (i_nbHits == 0)
+        return;
+
     // Store in memory the portion of the file corresponding to the current bucket.
     char *p_buf = new char[i_nbHits * HIT_DATA_SIZE];
     ifs.read(p_buf, i_nbHits * HIT_DATA_SIZE);
