@@ -16,7 +16,7 @@ using namespace cv;
 class ImageProcessor
 {
 public:
-    ImageProcessor(DataWriter *dataWriter, String visualWordsPath);
+    ImageProcessor(String visualWordsPath, String indexPath);
     void init();
     void stop();
 

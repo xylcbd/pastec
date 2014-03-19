@@ -14,8 +14,8 @@
 using namespace std;
 
 
-ImageProcessor::ImageProcessor(DataWriter *dataWriter, String visualWordsPath)
-    : dataWriter(dataWriter), visualWordsPath(visualWordsPath)
+ImageProcessor::ImageProcessor(String visualWordsPath, String indexPath)
+    : visualWordsPath(visualWordsPath), indexPath(indexPath)
 { }
 
 
@@ -28,7 +28,8 @@ void ImageProcessor::init()
     assert(words->rows == 1000000);
 
     cout << "Building the kd-trees." << endl;
-    index = new flann::Index(*words, flann::KDTreeIndexParams());
+    //index = new flann::Index(*words, flann::KDTreeIndexParams());
+    index = new flann::Index(*words, flann::SavedIndexParams(indexPath));
 }
 
 
