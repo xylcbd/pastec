@@ -25,6 +25,7 @@ class PastecConnection:
 
     def connect(self, host="localhost", port=4212):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setblocking(True)
         self.sock.connect((host, port))
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
