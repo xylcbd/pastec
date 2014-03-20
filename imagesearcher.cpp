@@ -121,19 +121,21 @@ void ImageSearcher::searchImage(SearchRequest request)
     unsigned i_imgWidth = img.cols;
     unsigned i_imgHeight = img.rows;
 
-    if (i_imgWidth > 2000
-        || i_imgHeight > 2000)
+    if (i_imgWidth > 1000
+        || i_imgHeight > 1000)
     {
         cout << "Image too large." << endl;
         request.client->sendReply(IMAGE_SIZE_TOO_BIG);
+        return;
     }
 
-#if 0
-    if (i_imgWidth < 150
-        || i_imgHeight < 150)
+#if 1
+    if (i_imgWidth < 200
+        || i_imgHeight < 200)
     {
         cout << "Image too small." << endl;
-        return false;
+        request.client->sendReply(IMAGE_SIZE_TOO_SMALL);
+        return;
     }
 #endif
 

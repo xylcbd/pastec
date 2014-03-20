@@ -143,6 +143,8 @@ class PastecConnection:
             raise PastecException("Image data too big.")
         elif val == Reply.IMAGE_SIZE_TOO_BIG:
             raise PastecException("Image size too big.")
+        elif val == Reply.IMAGE_SIZE_TOO_SMALL:
+            raise PastecException("Image size too small.")
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
         else:

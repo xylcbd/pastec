@@ -10,6 +10,7 @@ class Reply():
     IMAGE_NOT_INDEXED = 21
     IMAGE_SIZE_TOO_BIG = 22
     IMAGE_NOT_DECODED = 23
+    IMAGE_SIZE_TOO_SMALL = 24
 
 class Query():
     BUILD_FORWARD_INDEX = 1

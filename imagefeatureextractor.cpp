@@ -79,6 +79,7 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
         || i_imgHeight < 200)
     {
         cout << "Image too small." << endl;
+        p_client->sendReply(IMAGE_SIZE_TOO_SMALL);
         return false;
     }
 #endif
