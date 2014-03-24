@@ -22,11 +22,7 @@ bool ForwardIndexBuilder::build(unsigned i_nbImages, char *p_imageIds)
     for (unsigned i = 0; i < i_nbImages; ++i)
     {
         unsigned i_imageId = *(u_int32_t *)p_imageIds;
-        if (!addImage(i_imageId))
-        {
-            ofs.close();
-            return false;
-        }
+        addImage(i_imageId);
         p_imageIds += sizeof(u_int32_t);
     }
 
