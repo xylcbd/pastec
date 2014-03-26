@@ -142,7 +142,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     vector<KeyPoint> keypoints;
     Mat descriptors;
 
-    SIFT()(img, noArray(), keypoints, descriptors);
+    SIFT(0, 3, 0.03, 10, 1.0)(img, noArray(), keypoints, descriptors);
     std::cout << "Nb SIFTs: " << keypoints.size() << std::endl;
 
     gettimeofday(&t[1], NULL);
