@@ -153,7 +153,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     map<u_int32_t, list<Hit> > imageReqHits; // key: visual word, value: the found angles
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
-        #define NB_NEIGHBORS 4
+        #define NB_NEIGHBORS 1
 
         vector<int> indices(NB_NEIGHBORS);
         vector<float> dists(NB_NEIGHBORS);
