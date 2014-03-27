@@ -174,11 +174,13 @@ void *RANSACThread::run()
         mIt++; // Increment the iterator for the next iteration.
         pthread_mutex_unlock(p_itMutex);
 
+        #define MIN_NB_INLINERS 8
+
         assert(task.points1.size() == task.points2.size());
-        if (task.points1.size() >= 4)
+        if (task.points1.size() >= MIN_NB_INLINERS)
         {
             Mat mask;
-            findHomography(task.points1, task.points2, CV_RANSAC, 400, mask);
+            findHomography(task.points1, task.points2, CV_RANSAC, 800, mask);
 
             // Count the number of inliners.
             unsigned i_nbInliners = 0;
@@ -186,7 +188,7 @@ void *RANSACThread::run()
                 if (mask.at<uchar>(0, i) == 1)
                     i_nbInliners++;
 
-            if (i_nbInliners >= 7)
+            if (i_nbInliners >= MIN_NB_INLINERS)
             {
                 pthread_mutex_lock(p_resultsMutex);
                 rankedResultsOut.push(SearchResult(i_nbInliners, i_imageId));
