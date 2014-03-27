@@ -44,6 +44,7 @@ private:
     bool readVisualWords(string fileName, Mat *words);
     unsigned long getTimeDiff(const timeval t1, const timeval t2) const;
     void sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const;
+    float computeSIFTEntropy(unsigned i_word) const;
 
     BackwardIndexReader *backwardIndex;
     ImageReranker reranker;

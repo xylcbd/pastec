@@ -167,6 +167,9 @@ void ImageSearcher::searchImage(SearchRequest request)
             if (backwardIndex->getWordNbOccurences(indices[j]) > backwardIndex->getMaxNbRecords())
                 continue;
 
+            /*if (computeSIFTEntropy(indices[j]) < 3.)
+                continue;*/
+
             // Convert the angle to a 16 bit integer.
             Hit hit;
             hit.i_imageId = 0;
@@ -345,4 +348,27 @@ void ImageSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds)
     }
 
     req.client->sendReply(p - msg, msg);
+}
+
+
+/**
+ * @brief Compute the entropy of a SIFT keyword.
+ * @param i_word the word id.
+ * @return the entropy value.
+ */
+float ImageSearcher::computeSIFTEntropy(unsigned i_word) const
+{
+    const Mat word = words->row(i_word);
+    float p_occurences[256] = {0};
+
+    for (unsigned i = 0; i < 128; ++i)
+        p_occurences[word.at<unsigned char>(0, i)] += 1. / 128;
+
+    float f_entropy = 0;
+    for (unsigned i = 0; i < 256; ++i)
+        if (p_occurences[i] > 0)
+            f_entropy -= p_occurences[i] * log(p_occurences[i]) / log(2.);
+
+    cout << "Entropy: " << f_entropy << endl;
+    return f_entropy;
 }
