@@ -38,8 +38,7 @@ LIBS += -pthread \
         -lopencv_nonfree \
         -lopencv_features2d \
         -lopencv_calib3d \
-        -lpq \
-        -lcurl
+        -lpq
 
 INCLUDEPATH += /home/magsoft/trunks/opencv-2.4.6.1/modules/core/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/features2d/include \
