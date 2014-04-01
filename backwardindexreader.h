@@ -39,6 +39,8 @@ private:
     map<u_int64_t, unsigned> nbWords;
 
     BackwardIndexReaderAccess *indexAccess;
+
+    pthread_mutex_t readMutex;
 };
 
 #endif // BACKWARDINDEXREADER_H

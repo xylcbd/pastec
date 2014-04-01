@@ -7,6 +7,9 @@
 
 BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
 {
+    // Init the mutex.
+    pthread_mutex_init(&readMutex, NULL);
+
     // Open the file.
     indexAccess = new BackwardIndexReaderFileAccess();
     if (!indexAccess->open(backwardIndexPath))
@@ -72,12 +75,14 @@ BackwardIndexReader::~BackwardIndexReader()
     delete[] nbOccurences;
     indexAccess->close();
     delete indexAccess;
+    pthread_mutex_destroy(&readMutex);
 }
 
 
 void BackwardIndexReader::getImagesWithVisualWords(map<u_int32_t, list<Hit> > &imagesReqHits,
                                                    map<u_int32_t, vector<Hit> > &indexHits)
 {
+    pthread_mutex_lock(&readMutex);
     /* We assume that the map is ordered from the lowest key to the highest
      * to read the index continuously. */
     for (map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
@@ -104,6 +109,7 @@ void BackwardIndexReader::getImagesWithVisualWords(map<u_int32_t, list<Hit> > &i
             hits[i].y = y;
         }
     }
+    pthread_mutex_unlock(&readMutex);
 }
 
 

@@ -16,24 +16,17 @@ ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath,
                              string indexPath)
     : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath),
       indexPath(indexPath)
-{
-    pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&imageAvailable, NULL);
-}
+{ }
 
 
 ImageSearcher::~ImageSearcher()
-{
-    pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&imageAvailable);
-}
+{ }
 
 
 /**
- * @brief ImageSearcher main thread.
- * @return a null pointer.
+ * @brief Init the ImageSearcher.
  */
-void *ImageSearcher::run()
+void ImageSearcher::init()
 {
     backwardIndex = new BackwardIndexReader(backwardIndexPath);
 
@@ -51,48 +44,24 @@ void *ImageSearcher::run()
     myIndex = new flann::Index(*words, flann::SavedIndexParams(indexPath));
 
     cout << "Ready to accept search queries." << endl;
-
-    while (!b_mustStop)
-    {
-        pthread_mutex_lock(&mutex);
-        if (requests.empty())
-        {
-            pthread_cond_wait(&imageAvailable, &mutex);
-            if (requests.empty())
-                continue;
-        }
-
-        SearchRequest request = requests.front();
-        requests.pop();
-
-        pthread_mutex_unlock(&mutex);
-
-        searchImage(request);
-    }
-
-    delete myIndex;
-    delete words;
-    delete backwardIndex;
-
-    return NULL;
 }
 
 
 /**
- * @brief Add an image in the processing queue for being searched.
- * @param hit the hit to write.
+ * @brief Stop the ImageSearcher.
  */
-void ImageSearcher::queueRequest(SearchRequest request)
+void ImageSearcher::stop()
 {
-    pthread_mutex_lock(&mutex);
-
-    requests.push(request);
-    pthread_cond_signal(&imageAvailable);
-
-    pthread_mutex_unlock(&mutex);
+    delete myIndex;
+    delete words;
+    delete backwardIndex;
 }
 
 
+/**
+ * @brief Processed a search request.
+ * @param request the request to proceed.
+ */
 void ImageSearcher::searchImage(SearchRequest request)
 {
     timeval t[5];
