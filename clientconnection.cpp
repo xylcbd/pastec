@@ -230,13 +230,17 @@ void ClientConnection::parseMessages()
         }
         case INIT_IMAGE_FEATURE_EXTRACTOR:
         {
-            if (!closeCurrentMode())
+            // Change the current mode if needed.
+            if (mode->mode != IMAGE_FEATURE_EXTRACTOR_MODE)
             {
-                sendReply(ERROR_GENERIC);
-                return;
+                if (!closeCurrentMode())
+                {
+                    sendReply(ERROR_GENERIC);
+                    return;
+                }
+                mode->mode = IMAGE_FEATURE_EXTRACTOR_MODE;
+                imageFeatureExtractor->init();
             }
-            mode->mode = IMAGE_FEATURE_EXTRACTOR_MODE;
-            imageFeatureExtractor->init();
 
             sendReply(OK);
 
