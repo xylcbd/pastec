@@ -29,16 +29,19 @@ HEADERS += \
     imagefeatureextractor.h \
     forwardindexbuilder.h
 
-LIBS += -pthread \
-        -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \
-        -lopencv_core \
-        -lopencv_highgui \
-        -lopencv_imgproc \
-        -lopencv_flann \
-        -lopencv_nonfree \
-        -lopencv_features2d \
-        -lopencv_calib3d \
-        -lpq
+LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_nonfree.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_features2d.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_imgproc.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_highgui.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/3rdparty/lib/libIlmImf.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_flann.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/3rdparty/lib/liblibjasper.a \
+        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_core.a \
+        -pthread \
+        -lpq \
+        -ljpeg -lpng -ltiff \
+        -lz
 
 INCLUDEPATH += /home/magsoft/trunks/opencv-2.4.6.1/modules/core/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/features2d/include \
