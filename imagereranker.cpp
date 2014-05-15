@@ -77,6 +77,22 @@ void ImageReranker::rerank(map<u_int32_t, list<Hit> > &imagesReqHits,
 }
 
 
+class Pos {
+public:
+    Pos(int x, int y) : x(x), y(y) {}
+
+    inline bool operator< (const Pos &rhs) const {
+        if (x != rhs.x)
+            return x < rhs.x;
+        else
+            return y < rhs.y;
+    }
+
+private:
+    int x, y;
+};
+
+
 void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
                                  map<u_int32_t, vector<Hit> > &indexHits,
                                  priority_queue<SearchResult> &rankedResultsIn,
@@ -86,6 +102,7 @@ void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
     set<u_int32_t> firstImageIds;
 
     map<u_int32_t, RANSACTask> imgTasks;
+    map<u_int32_t, set<Pos> > matchedPos;
 
     // Extract the first i_nbResults ranked images.
     getFirstImageIds(rankedResultsIn, i_nbResults, firstImageIds);
@@ -103,10 +120,12 @@ void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
             continue;
 
         const Point2f point1(hits.front().x, hits.front().y);
+        Pos p(hits.front().x, hits.front().y);
         const vector<Hit> &hitIndex = indexHits[i_wordId];
 
-        // Record the visual words that have already been matched.
+        // Detect the images for which the keypoint appear more than once.
         set<u_int32_t> entriesRecorded;
+        set<u_int32_t> duplicateEntries;
 
         for (unsigned i = 0; i < hitIndex.size(); ++i)
         {
@@ -114,10 +133,25 @@ void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
             // Test if the image belongs to the image to rerank.
             if (firstImageIds.find(i_imageId) != firstImageIds.end())
             {
-                // Match only one keypoint with id i_wordId.
                 if (entriesRecorded.find(i_imageId) == entriesRecorded.end())
+                    entriesRecorded.insert(i_imageId);
+                else
+                    duplicateEntries.insert(i_imageId);
+            }
+        }
+
+        for (unsigned i = 0; i < hitIndex.size(); ++i)
+        {
+            const u_int32_t i_imageId = hitIndex[i].i_imageId;
+            // Test if the image belongs to the image to rerank.
+            if (firstImageIds.find(i_imageId) != firstImageIds.end())
+            {
+                // Do not match a keypoint if it appears more than once in an image.
+                if (duplicateEntries.find(i_imageId) == duplicateEntries.end()
+                    && matchedPos[i_imageId].find(p) == matchedPos[i_imageId].end())
                 {
                     const Point2f point2(hitIndex[i].x, hitIndex[i].y);
+                    matchedPos[i_imageId].insert(p);
                     imgTasks[i_imageId].points1.push_back(point1);
                     imgTasks[i_imageId].points2.push_back(point2);
                     entriesRecorded.insert(i_imageId);
