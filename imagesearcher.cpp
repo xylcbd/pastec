@@ -3,6 +3,7 @@
 #include <sys/time.h>
 
 #include <set>
+#include <tr1/unordered_map>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -111,7 +112,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     vector<KeyPoint> keypoints;
     Mat descriptors;
 
-    SIFT(0, 3, 0.03, 10, 1.0)(img, noArray(), keypoints, descriptors);
+    SIFT(0, 4, 0.02, 10, 1.0)(img, noArray(), keypoints, descriptors);
     std::cout << "Nb SIFTs: " << keypoints.size() << std::endl;
 
     gettimeofday(&t[1], NULL);
@@ -119,7 +120,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     cout << "time: " << getTimeDiff(t[0], t[1]) << " ms." << endl;
     cout << "Looking for the visual words. " << endl;
 
-    map<u_int32_t, list<Hit> > imageReqHits; // key: visual word, value: the found angles
+    unordered_map<u_int32_t, list<Hit> > imageReqHits; // key: visual word, value: the found angles
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
         #define NB_NEIGHBORS 1
@@ -155,16 +156,16 @@ void ImageSearcher::searchImage(SearchRequest request)
     const unsigned i_nbTotalIndexedImages = backwardIndex->getTotalNbIndexedImages();
     cout << i_nbTotalIndexedImages << " images indexed in the index." << endl;
 
-    map<u_int32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
+    unordered_map<u_int32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
     backwardIndex->getImagesWithVisualWords(imageReqHits, indexHits);
 
     gettimeofday(&t[2], NULL);
     cout << "time: " << getTimeDiff(t[1], t[2]) << " ms." << endl;
     cout << "Ranking the images." << endl;
 
-    map<u_int32_t, float> weights; // key: image id, value: image score.
+    unordered_map<u_int32_t, float> weights; // key: image id, value: image score.
 
-    for (map<u_int32_t, vector<Hit> >::const_iterator it = indexHits.begin();
+    for (unordered_map<u_int32_t, vector<Hit> >::const_iterator it = indexHits.begin();
         it != indexHits.end(); ++it)
     {
         const vector<Hit> &hits = it->second;
@@ -181,7 +182,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     }
 
     priority_queue<SearchResult> rankedResults;
-    for (map<unsigned, float>::const_iterator it = weights.begin();
+    for (tr1::unordered_map<unsigned, float>::const_iterator it = weights.begin();
          it != weights.end(); ++it)
         rankedResults.push(SearchResult(it->second, it->first));
 

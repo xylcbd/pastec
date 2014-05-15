@@ -9,11 +9,13 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <tr1/unordered_map>
 
 #include "hit.h"
 #include "backwardindexreaderaccess.h"
 
 using namespace std;
+using namespace std::tr1;
 
 
 #define NB_VISUAL_WORDS 1000000
@@ -24,8 +26,8 @@ class BackwardIndexReader
 public:
     BackwardIndexReader(string backwardIndexPath);
     ~BackwardIndexReader();
-    void getImagesWithVisualWords(map<u_int32_t, list<Hit> > &imagesReqHits,
-                                  map<u_int32_t, vector<Hit> > &indexHits);
+    void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                                  unordered_map<u_int32_t, vector<Hit> > &indexHits);
     unsigned getWordNbOccurences(unsigned i_wordId);
     unsigned countTotalNbWord(unsigned i_imageId);
     unsigned getTotalNbIndexedImages();
@@ -36,7 +38,7 @@ private:
     u_int64_t *nbOccurences;
     unsigned maxNbRecords;
 
-    map<u_int64_t, unsigned> nbWords;
+    unordered_map<u_int64_t, unsigned> nbWords;
 
     BackwardIndexReaderAccess *indexAccess;
 

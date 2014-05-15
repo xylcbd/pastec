@@ -93,8 +93,8 @@ private:
 };
 
 
-void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
-                                 map<u_int32_t, vector<Hit> > &indexHits,
+void ImageReranker::rerankRANSAC(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                                 unordered_map<u_int32_t, vector<Hit> > &indexHits,
                                  priority_queue<SearchResult> &rankedResultsIn,
                                  priority_queue<SearchResult> &rankedResultsOut,
                                  unsigned i_nbResults)
@@ -107,7 +107,7 @@ void ImageReranker::rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
     // Extract the first i_nbResults ranked images.
     getFirstImageIds(rankedResultsIn, i_nbResults, firstImageIds);
 
-    for (map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
+    for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         // Try to match all the visual words of the request image.

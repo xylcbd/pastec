@@ -3,9 +3,9 @@
 
 #include <sys/types.h>
 
-#include <map>
 #include <queue>
 #include <list>
+#include <tr1/unordered_map>
 
 #include <opencv2/core/core.hpp>
 
@@ -14,6 +14,7 @@
 #include "hit.h"
 
 using namespace std;
+using namespace std::tr1;
 using namespace cv;
 
 
@@ -26,8 +27,8 @@ public:
                 priority_queue<SearchResult> &rankedResultsIn,
                 priority_queue<SearchResult> &rankedResultsOut,
                 unsigned i_nbResults);
-    void rerankRANSAC(map<u_int32_t, list<Hit> > &imagesReqHits,
-                      map<u_int32_t, vector<Hit> > &indexHits,
+    void rerankRANSAC(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                      unordered_map<u_int32_t, vector<Hit> > &indexHits,
                       priority_queue<SearchResult> &rankedResultsIn,
                       priority_queue<SearchResult> &rankedResultsOut,
                       unsigned i_nbResults);

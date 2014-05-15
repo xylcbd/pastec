@@ -79,13 +79,13 @@ BackwardIndexReader::~BackwardIndexReader()
 }
 
 
-void BackwardIndexReader::getImagesWithVisualWords(map<u_int32_t, list<Hit> > &imagesReqHits,
-                                                   map<u_int32_t, vector<Hit> > &indexHits)
+void BackwardIndexReader::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                                                   unordered_map<u_int32_t, vector<Hit> > &indexHits)
 {
     pthread_mutex_lock(&readMutex);
     /* We assume that the map is ordered from the lowest key to the highest
      * to read the index continuously. */
-    for (map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
+    for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         const unsigned i_wordId = it->first;
