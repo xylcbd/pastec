@@ -27,7 +27,7 @@ public:
     BackwardIndexReader(string backwardIndexPath);
     ~BackwardIndexReader();
     void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                                  unordered_map<u_int32_t, vector<Hit> > &indexHits);
+                                  unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
     unsigned getWordNbOccurences(unsigned i_wordId);
     unsigned countTotalNbWord(unsigned i_imageId);
     unsigned getTotalNbIndexedImages();
@@ -39,6 +39,7 @@ private:
     unsigned maxNbRecords;
 
     unordered_map<u_int64_t, unsigned> nbWords;
+    vector<Hit> indexHits[NB_VISUAL_WORDS];
 
     BackwardIndexReaderAccess *indexAccess;
 

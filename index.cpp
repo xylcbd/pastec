@@ -55,6 +55,33 @@ BackwardIndexReader::BackwardIndexReader(string backwardIndexPath)
     cout << "Nb skipped words: " << i_nbSkipedWords << endl;
 
     indexAccess->reset();
+
+    cout << "Loading the index in memory" << endl;
+
+    for (unsigned i_wordId = 0; i_wordId < NB_VISUAL_WORDS; ++i_wordId)
+    {
+        indexAccess->moveAt(wordOffSet[i_wordId]);
+        vector<Hit> &hits = indexHits[i_wordId];
+
+        const unsigned i_nbOccurences = nbOccurences[i_wordId];
+        hits.resize(i_nbOccurences);
+
+        for (u_int64_t i = 0; i < i_nbOccurences; ++i)
+        {
+            u_int32_t i_imageId;
+            u_int16_t i_angle, x, y;
+            indexAccess->read((char *)&i_imageId, sizeof(u_int32_t));
+            indexAccess->read((char *)&i_angle, sizeof(u_int16_t));
+            indexAccess->read((char *)&x, sizeof(u_int16_t));
+            indexAccess->read((char *)&y, sizeof(u_int16_t));
+            hits[i].i_imageId = i_imageId;
+            hits[i].i_angle = i_angle;
+            hits[i].x = x;
+            hits[i].y = y;
+        }
+    }
+
+    cout << "Done" << endl;
 }
 
 
@@ -80,35 +107,17 @@ BackwardIndexReader::~BackwardIndexReader()
 
 
 void BackwardIndexReader::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                                                   unordered_map<u_int32_t, vector<Hit> > &indexHits)
+                                                   unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq)
 {
     pthread_mutex_lock(&readMutex);
-    /* We assume that the map is ordered from the lowest key to the highest
-     * to read the index continuously. */
+
     for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         const unsigned i_wordId = it->first;
-        indexAccess->moveAt(wordOffSet[i_wordId]);
-        vector<Hit> &hits = indexHits[i_wordId];
-
-        const unsigned i_nbOccurences = nbOccurences[i_wordId];
-        hits.resize(i_nbOccurences);
-
-        for (u_int64_t i = 0; i < i_nbOccurences; ++i)
-        {
-            u_int32_t i_imageId;
-            u_int16_t i_angle, x, y;
-            indexAccess->read((char *)&i_imageId, sizeof(u_int32_t));
-            indexAccess->read((char *)&i_angle, sizeof(u_int16_t));
-            indexAccess->read((char *)&x, sizeof(u_int16_t));
-            indexAccess->read((char *)&y, sizeof(u_int16_t));
-            hits[i].i_imageId = i_imageId;
-            hits[i].i_angle = i_angle;
-            hits[i].x = x;
-            hits[i].y = y;
-        }
+        indexHitsForReq[i_wordId] = indexHits[i_wordId];
     }
+
     pthread_mutex_unlock(&readMutex);
 }
 
