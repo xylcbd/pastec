@@ -1,23 +1,20 @@
 #!/usr/bin/python3
 
 class Reply():
-    OK = 1
-    ERROR_GENERIC = 2
-    PONG = 3
-    TOO_MANY_CLIENTS = 4
-    WRONG_MODE = 10
-    IMAGE_DATA_TOO_BIG = 20
-    IMAGE_NOT_INDEXED = 21
-    IMAGE_SIZE_TOO_BIG = 22
-    IMAGE_NOT_DECODED = 23
-    IMAGE_SIZE_TOO_SMALL = 24
+    OK =                                0x10010000
+    ERROR_GENERIC =                     0x10020000
+    PONG =                              0x10030000
+    TOO_MANY_CLIENTS =                  0x10040000
+
+    IMAGE_DATA_TOO_BIG =                0x10050100
+    IMAGE_NOT_INDEXED =                 0x10050200
+    IMAGE_SIZE_TOO_BIG =                0x10050300
+    IMAGE_NOT_DECODED =                 0x10050400
+    IMAGE_SIZE_TOO_SMALL =              0x10050500
 
 class Query():
-    BUILD_FORWARD_INDEX = 1
-    BUILD_BACKWARD_INDEX = 2
-    INIT_SEARCH = 3
-    INIT_IMAGE_FEATURE_EXTRACTOR = 4
-    INDEX_IMAGE = 11
-    PING = 20
-    STOP = 30
-    SEARCH = 40
+    INDEX_IMAGE =                       0x00010000
+    SEARCH =                            0x00020000
+    PING =                              0x00030000
+    WRITE_INDEX =                       0x00040000
+    CLEAE_INDEX =                       0x00050000

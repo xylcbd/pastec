@@ -12,23 +12,17 @@
 #include <iostream>
 
 #include "server.h"
-#include "forwardindexbuilder.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
 
 
-Server::Server(ForwardIndexBuilder *forwardIndexBuilder,
-               BackwardIndexBuilder *backwardIndexBuilder,
-               ImageFeatureExtractor *imageProcessor,
-               ImageSearcher *imageSearcher,
-               IndexMode *mode)
+Server::Server(ImageFeatureExtractor *imageProcessor,
+               ImageSearcher *imageSearcher, Index *index)
     : portNumber(4212),
       i_curNbClients(0),
-      forwardIndexBuilder(forwardIndexBuilder),
-      backwardIndexBuilder(backwardIndexBuilder),
       imageProcessor(imageProcessor),
       imageSearcher(imageSearcher),
-      mode(mode)
+      index(index)
 {
     /* Create a pipe. */
     int pipefd[2];
@@ -139,11 +133,10 @@ void *Server::run()
 
                     if (b_acceptClient)
                     {
-                        ClientConnection *c = new ClientConnection(newFd, forwardIndexBuilder,
-                                                                   backwardIndexBuilder,
+                        ClientConnection *c = new ClientConnection(newFd,
                                                                    imageProcessor,
                                                                    imageSearcher,
-                                                                   mode, this);
+                                                                   index, this);
                         c->start();
 
                         pthread_mutex_lock(&clientsMutex);
@@ -153,7 +146,7 @@ void *Server::run()
                     }
                     else
                     {
-                        char p_msg[] = {TOO_MANY_CLIENTS};
+                        u_int32_t p_msg[] = {TOO_MANY_CLIENTS};
                         send(newFd, p_msg, sizeof(p_msg), 0);
                         close(newFd);
                     }

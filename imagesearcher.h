@@ -7,7 +7,8 @@
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/flann/flann.hpp>
 
-#include "backwardindexreader.h"
+#include "index.h"
+#include "wordindex.h"
 #include "searchResult.h"
 #include "imagereranker.h"
 
@@ -27,11 +28,8 @@ struct SearchRequest
 class ImageSearcher
 {
 public:
-    ImageSearcher(string backwardIndexPath, string visualWordsPath,
-                  string indexPath);
+    ImageSearcher(Index *index, WordIndex *wordIndex);
     virtual ~ImageSearcher();
-    void init();
-    void stop();
     void searchImage(SearchRequest request);
 
 private:
@@ -39,20 +37,12 @@ private:
                        SearchRequest &req, unsigned i_maxNbResults);
     void writeResultsHTML(priority_queue<SearchResult> &rankedResults,
                           string htmlPagePath, unsigned i_maxNbResults);
-    bool readVisualWords(string fileName, Mat *words);
     unsigned long getTimeDiff(const timeval t1, const timeval t2) const;
     void sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const;
-    float computeSIFTEntropy(unsigned i_word) const;
 
-    BackwardIndexReader *backwardIndex;
+    Index *index;
+    WordIndex *wordIndex;
     ImageReranker reranker;
-
-    string backwardIndexPath;
-    string visualWordsPath;
-    string indexPath;
-
-    Mat *words;
-    flann::Index *myIndex;
 };
 
 #endif // IMAGESEARCHER_H

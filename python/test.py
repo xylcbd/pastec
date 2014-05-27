@@ -2,13 +2,12 @@
 
 import PastecLib
 
-pastec = PastecLib.PastecConnection()
+c = PastecLib.PastecConnection()
+c.connect()
+#c.indexImageFile(1, "/home/magsoft/Bureau/testPastec/starTrek.jpg")
+#c.indexImageFile(2, "/home/magsoft/Bureau/testPastec/test.jpg")
+fd = open("/home/magsoft/Bureau/testPastec/test.jpg", "rb")
+data = fd.read(1024*1024)
+print(c.imageQuery(data))
 
-pastec.connect("pastec2")
-pastec.initBuildForwardIndex()
-pastec.indexImageFile(42, "test.jpg")
-
-pastec.buildBackwardIndex()
-
-pastec.close()
-
+c.writeIndex()

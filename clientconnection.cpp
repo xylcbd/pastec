@@ -9,21 +9,17 @@
 #include "clientconnection.h"
 #include "dataMessages.h"
 #include "server.h"
-#include "indexmode.h"
 #include "imagefeatureextractor.h"
 #include "imagesearcher.h"
 
 
-ClientConnection::ClientConnection(int socketFd, ForwardIndexBuilder *forwardIndexBuilder,
-                                   BackwardIndexBuilder *backwardIndexBuilder,
+ClientConnection::ClientConnection(int socketFd,
                                    ImageFeatureExtractor *imageProcessor,
-                                   ImageSearcher *imageSearcher,
-                                   IndexMode *mode, Server *server)
-    : socketFd(socketFd), forwardIndexBuilder(forwardIndexBuilder),
-      backwardIndexBuilder(backwardIndexBuilder),
-      imageFeatureExtractor(imageProcessor),
-      imageSearcher(imageSearcher),
-      mode(mode), server(server)
+                                   ImageSearcher *imageSearcher, Index *index,
+                                   Server *server)
+    : socketFd(socketFd), imageFeatureExtractor(imageProcessor),
+      imageSearcher(imageSearcher), index(index),
+      server(server)
 {
     /* Create a pipe. */
     int pipefd[2];
@@ -164,103 +160,19 @@ void ClientConnection::parseMessages()
 
     assert(buf.length > 0);
 
-    while (buf.length > 0)
+    while (buf.length >= 4)
     {
-        switch (buf.data[0])
+        u_int32_t *msg = (u_int32_t *)p;
+
+        switch (*msg)
         {
-        case BUILD_FORWARD_INDEX:
-        {
-            if (!closeCurrentMode())
-            {
-                sendReply(ERROR_GENERIC);
-                return;
-            }
-            mode->mode = BUILD_FORWARD_INDEX_MODE;
-
-            if (buf.length < MSG_BUILD_FORWARD_INDEX_LEN)
-                return; // The complete message was not received.
-
-            unsigned i_nbImages = *(u_int32_t *)(p + 1);
-            unsigned i_msgSize = MSG_BUILD_FORWARD_INDEX_LEN + i_nbImages * 4;
-
-            // Test if we have received all the image data.
-            if (buf.length < i_msgSize)
-                return;
-
-            if (forwardIndexBuilder->build(i_nbImages, p + MSG_BUILD_FORWARD_INDEX_LEN))
-                sendReply(OK);
-            else
-                sendReply(ERROR_GENERIC);
-
-            memmove(p, p + i_msgSize, buf.length - i_msgSize);
-            buf.length -= i_msgSize;
-            break;
-        }
-        case BUILD_BACKWARD_INDEX:
-        {
-            if (!closeCurrentMode())
-            {
-                sendReply(ERROR_GENERIC);
-                return;
-            }
-            mode->mode = BUILD_BACKWARD_INDEX_MODE;
-            backwardIndexBuilder->start();
-
-            sendReply(OK);
-
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
-            break;
-        }
-        case INIT_SEARCH:
-        {
-            if (!closeCurrentMode())
-            {
-                sendReply(ERROR_GENERIC);
-                return;
-            }
-            mode->mode = SEARCH_MODE;
-            imageSearcher->init();
-
-            sendReply(OK);
-
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
-            break;
-        }
-        case INIT_IMAGE_FEATURE_EXTRACTOR:
-        {
-            // Change the current mode if needed.
-            if (mode->mode != IMAGE_FEATURE_EXTRACTOR_MODE)
-            {
-                if (!closeCurrentMode())
-                {
-                    sendReply(ERROR_GENERIC);
-                    return;
-                }
-                mode->mode = IMAGE_FEATURE_EXTRACTOR_MODE;
-                imageFeatureExtractor->init();
-            }
-
-            sendReply(OK);
-
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
-            break;
-        }
         case INDEX_IMAGE:
         {
-            if (mode->mode != IMAGE_FEATURE_EXTRACTOR_MODE)
-            {
-                sendReply(WRONG_MODE);
-                return;
-            }
-
             if (buf.length < MSG_INDEX_IMAGE_HEADER_LEN)
                 return; // The complete message was not received.
 
-            unsigned i_imageId = *(u_int32_t *)(p + 1);
-            unsigned i_imageSize = *(u_int32_t *)(p + 5);
+            unsigned i_imageId = *(u_int32_t *)(p + 4);
+            unsigned i_imageSize = *(u_int32_t *)(p + 8);
             unsigned i_msgSize = MSG_INDEX_IMAGE_HEADER_LEN + i_imageSize;
 
             // Test if the image is not too big.
@@ -281,11 +193,23 @@ void ClientConnection::parseMessages()
             buf.length -= i_msgSize;
             break;
         }
+        case WRITE_INDEX:
+        {
+            bool success = index->write();
+            if (success)
+                sendReply(OK);
+            else
+                sendReply(ERROR_GENERIC);
+
+            memmove(p, p + 4, buf.length - 4);
+            buf.length -= 4;
+            break;
+        }
         case PING:
         {
             sendReply(PONG);
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
+            memmove(p, p + 4, buf.length - 4);
+            buf.length -= 4;
             break;
         }
         case SEARCH:
@@ -296,11 +220,11 @@ void ClientConnection::parseMessages()
              * - X bytes for the image data.
              */
 
-            if (buf.length < 5) // Not enough bytes to decode the msg length.
+            if (buf.length < 8) // Not enough bytes to decode the msg length.
                 return;
 
-            u_int32_t i_imageSize = *(u_int32_t *)(p + 1);
-            unsigned i_msgSize = 5 + i_imageSize;
+            u_int32_t i_imageSize = *(u_int32_t *)(p + 4);
+            unsigned i_msgSize = 8 + i_imageSize;
 
             if (buf.length < i_msgSize) // The picture has not been entirely received.
                 return;
@@ -308,7 +232,7 @@ void ClientConnection::parseMessages()
             SearchRequest req;
             req.imageData.resize(i_imageSize);
             req.client = this;
-            memcpy((void *)&req.imageData[0], p + 5, i_imageSize);
+            memcpy((void *)&req.imageData[0], p + 8, i_imageSize);
             imageSearcher->searchImage(req);
 
             assert(i_msgSize >= buf.length);
@@ -316,19 +240,11 @@ void ClientConnection::parseMessages()
             buf.length -= i_msgSize;
             break;
         }
-        case STOP:
-        {
-            cout << "Stop of the server asked." << endl;
-            server->stop();
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
-            break;
-        }
         default:
         {
             cout << "Got garbage message?" << endl;
-            memmove(p, p + 1, buf.length - 1);
-            buf.length -= 1;
+            memmove(p, p + 4, buf.length - 4);
+            buf.length -= 4;
             break;
         }
         }
@@ -341,16 +257,16 @@ void ClientConnection::parseMessages()
  * @param reply the reply code
  * @return true on success else false.
  */
-bool ClientConnection::sendReply(char reply)
+bool ClientConnection::sendReply(u_int32_t reply)
 {
-    char p_reply[] = {reply};
-    return sendReply(sizeof(p_reply), p_reply);
+    u_int32_t p_reply[] = {reply};
+    return sendReply(sizeof(p_reply), (char *)p_reply);
 }
 
 
 /**
  * @brief Send a message to the client
- * @param i_replyLen the length of the message.
+ * @param i_replyLen the length of the message:
  * @param p_reply a pointer to the message
  * @return true on success else false.
  */
@@ -365,36 +281,4 @@ bool ClientConnection::sendReply(unsigned i_replyLen, char *p_reply)
         i_nbBytesSent += n;
     }
     return true;
-}
-
-
-/**
- * @brief Close the current index mode.
- */
-bool ClientConnection::closeCurrentMode()
-{
-    bool b_ret = true;
-
-    switch (mode->mode)
-    {
-    case NO_MODE:
-        break;
-    case BUILD_FORWARD_INDEX_MODE:
-        break;
-    case BUILD_BACKWARD_INDEX_MODE:
-        if (!backwardIndexBuilder->hasFinished())
-            b_ret = false;
-        break;
-    case SEARCH_MODE:
-        imageSearcher->stop();
-        break;
-    case IMAGE_FEATURE_EXTRACTOR_MODE:
-        imageFeatureExtractor->stop();
-        break;
-    default:
-        assert(0);
-        break;
-    }
-
-    return b_ret;
 }

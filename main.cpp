@@ -1,11 +1,9 @@
 #include <iostream>
 
 #include "server.h"
-#include "forwardindexbuilder.h"
-#include "backwardindexbuilder.h"
 #include "imagefeatureextractor.h"
 #include "imagesearcher.h"
-#include "indexmode.h"
+#include "wordindex.h"
 
 
 using namespace std;
@@ -21,22 +19,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    ForwardIndexBuilder *fib = new ForwardIndexBuilder("forwardIndex.dat");
-    ImageFeatureExtractor *ife = new ImageFeatureExtractor(string(argv[1]), string(argv[2]));
-    BackwardIndexBuilder *bib = new BackwardIndexBuilder("forwardIndex.dat",
-                                                         "backwardIndex.dat");
-    ImageSearcher *is = new ImageSearcher("backwardIndex.dat", string(argv[1]),
-                                          string(argv[2]));
-    IndexMode mode;
-    Server *s = new Server(fib, bib, ife, is, &mode);
+    Index *index = new Index("backwardIndex.dat");
+    WordIndex *wordIndex = new WordIndex(string(argv[1]), string(argv[2]));
+    ImageFeatureExtractor *ife = new ImageFeatureExtractor(index, wordIndex);
+    ImageSearcher *is = new ImageSearcher(index, wordIndex);
+    Server *s = new Server(ife, is, index);
 
     s->start();
 
     s->join();
 
-    delete fib;
-    delete bib;
     delete s;
+    delete index;
 
     return 0;
 }

@@ -35,41 +35,10 @@ class PastecConnection:
 
     def waitForReply(self):
         d = self.sock.recv(1024)
-        if len(d) > 1:
+        if len(d) > 4:
             raise PastecException("Received message too long.")
-        val = struct.unpack("B", d)[0]
+        val = struct.unpack("I", d)[0]
         return val
-
-    def buildForwardIndex(self, images):
-        d = struct.pack("B", Query.BUILD_FORWARD_INDEX)
-        d += struct.pack("I", len(images))
-        for image in images:
-            d += struct.pack("I", image)
-        self.sendData(d)
-        val = self.waitForReply()
-        self.raiseExceptionIfNeeded(val)
-
-    def buildBackwardIndex(self):
-        d = struct.pack("B", Query.BUILD_BACKWARD_INDEX)
-        self.sendData(d)
-        val = self.waitForReply()
-        self.raiseExceptionIfNeeded(val)
-
-    def initSearch(self):
-        d = struct.pack("B", Query.INIT_SEARCH)
-        self.sendData(d)
-        val = self.waitForReply()
-        self.raiseExceptionIfNeeded(val)
-
-    def initImageFeatureExtractor(self):
-        d = struct.pack("B", Query.INIT_IMAGE_FEATURE_EXTRACTOR)
-        self.sendData(d)
-        val = self.waitForReply()
-        self.raiseExceptionIfNeeded(val)
-
-    def stopServer(self):
-        d = struct.pack("B", Query.STOP)
-        self.sendData(d)
 
     def indexImageFile(self, imageId, filePath):
         fd = open(filePath, "rb")
@@ -87,7 +56,7 @@ class PastecConnection:
         if len(imageData) > 1024 * 1024:
             raise PastecException("Image file too big.")
 
-        d = struct.pack("B", Query.INDEX_IMAGE)
+        d = struct.pack("I", Query.INDEX_IMAGE)
         d += struct.pack("II", imageId, len(imageData))
         d += imageData
 
@@ -96,28 +65,40 @@ class PastecConnection:
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
 
+    def writeIndex(self):
+        d = struct.pack("I", Query.WRITE_INDEX)
+        self.sendData(d)
+        val = self.waitForReply()
+        self.raiseExceptionIfNeeded(val)
+
+    def clearIndex(self):
+        d = struct.pack("I", Query.CLEAR_INDEX)
+        self.sendData(d)
+        val = self.waitForReply()
+        self.raiseExceptionIfNeeded(val)
+
     def imageQuery(self, imageData):
-        d = struct.pack("B", Query.SEARCH)
+        d = struct.pack("I", Query.SEARCH)
         d += struct.pack("I", len(imageData))
         d += imageData
 
         self.sendData(d)
 
         msg = b""
-        while len(msg) < 1:
+        while len(msg) < 4:
             msg += self.sock.recv(1024)
 
         # Get the message code.
-        val = int.from_bytes(struct.unpack("c", msg[:1])[0], byteorder='little')
+        val = struct.unpack("I", msg[:4])[0]
         self.raiseExceptionIfNeeded(val)
 
-        # code == 1: We get a list of images.
+        # We get a list of images.
 
-        while len(msg) < 5:
+        while len(msg) < 8:
             msg += self.sock.recv(1024)
 
         # Get the number of images.
-        nbImages = struct.unpack("I", msg[1:5])[0]
+        nbImages = struct.unpack("I", msg[4:8])[0]
 
         # Receive all the message containing the ids of the images.
         while len(msg) < 5 + nbImages * 4:
@@ -125,8 +106,9 @@ class PastecConnection:
 
         # Extract the image ids.
         imageIds = []
+        print(nbImages)
         for i in range(nbImages):
-            imageIds += [struct.unpack("I", msg[5 + 4 * i : 5 + 4 * (i + 1)])[0]]
+            imageIds += [struct.unpack("I", msg[8 + 4 * i : 8 + 4 * (i + 1)])[0]]
 
         return imageIds
 
@@ -137,8 +119,6 @@ class PastecConnection:
             raise PastecException("Generic error.")
         elif val == Reply.TOO_MANY_CLIENTS:
             raise PastecException("Too many clients connected to the server.")
-        elif val == Reply.WRONG_MODE:
-            raise PastecException("Index not in the right mode for this command.")
         if val == Reply.IMAGE_DATA_TOO_BIG:
             raise PastecException("Image data too big.")
         elif val == Reply.IMAGE_SIZE_TOO_BIG:
@@ -148,4 +128,4 @@ class PastecConnection:
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
         else:
-            raise PastecException("Unkown error code.")
+            raise PastecException("Unkown error code: %#010x" % val)

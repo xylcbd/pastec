@@ -6,28 +6,25 @@ CONFIG -= qt
 SOURCES += main.cpp \
     server.cpp \
     clientconnection.cpp \
-    backwardindexbuilder.cpp \
     imagesearcher.cpp \
-    backwardindexreader.cpp \
     imagereranker.cpp \
     imagefeatureextractor.cpp \
-    forwardindexbuilder.cpp
+    index.cpp \
+    wordindex.cpp
 
 HEADERS += \
     server.h \
     thread.h \
     dataMessages.h \
     clientconnection.h \
-    backwardindexbuilder.h \
-    indexmode.h \
     imagesearcher.h \
     hit.h \
-    backwardindexreader.h \
     searchResult.h \
     imagereranker.h \
     backwardindexreaderaccess.h \
     imagefeatureextractor.h \
-    forwardindexbuilder.h
+    index.h \
+    wordindex.h
 
 LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_nonfree.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \

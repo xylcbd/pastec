@@ -9,35 +9,13 @@
 #include "dataMessages.h"
 
 
-ImageFeatureExtractor::ImageFeatureExtractor(String visualWordsPath, String indexPath)
-    : visualWordsPath(visualWordsPath), indexPath(indexPath)
+ImageFeatureExtractor::ImageFeatureExtractor(Index *index, WordIndex *wordIndex)
+    : index(index), wordIndex(wordIndex)
 { }
 
 
-void ImageFeatureExtractor::init()
-{
-    words = new Mat(0, 128, CV_32F); // The matrix that stores the visual words.
-
-    if (!readVisualWords(visualWordsPath))
-        exit(1);
-    assert(words->rows == 1000000);
-
-    cout << "Building the kd-trees." << endl;
-    //index = new flann::Index(*words, flann::KDTreeIndexParams());
-    index = new flann::Index(*words, flann::SavedIndexParams(indexPath));
-}
-
-
-void ImageFeatureExtractor::stop()
-{
-    // TODO: add a mutex to be sure that we can kill this module.
-    delete words;
-    delete index;
-}
-
-
 bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
-                                     char *p_imgData, ClientConnection *p_client)
+                                            char *p_imgData, ClientConnection *p_client)
 {
     vector<char> imgData(i_imgSize);
     memcpy(imgData.data(), p_imgData, i_imgSize);
@@ -102,6 +80,7 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
 
     unsigned i_nbKeyPoints = 0;
     vector<KeyPoint> cleanKeypoints;
+    list<HitForward> imageHits;
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
         cleanKeypoints.push_back(keypoints[i]);
@@ -114,7 +93,7 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
 
         vector<int> indices(4);
         vector<float> dists(4);
-        index->knnSearch(descriptors.row(i), indices, dists, 4);
+        wordIndex->knnSearch(descriptors.row(i), indices, dists, 4);
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
@@ -131,8 +110,12 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
                 p_client->sendReply(ERROR_GENERIC);
                 return false;
             }
+            imageHits.push_back(newHit);
         }
     }
+    // Record the hits.
+    index->addImage(imageHits);
+
 
     ofs.close();
     std::cout << "Nb SIFTs: " << i_nbKeyPoints << std::endl;
@@ -195,47 +178,6 @@ bool ImageFeatureExtractor::writeHit(ofstream &ofs, HitForward hit)
     ofs.write((char *)&hit.i_angle, sizeof(u_int16_t));
     ofs.write((char *)&hit.x, sizeof(u_int16_t));
     ofs.write((char *)&hit.y, sizeof(u_int16_t));
-
-    return true;
-}
-
-
-/**
- * @brief Read the list of visual words from an external file.
- * @param fileName the path of the input file name.
- * @param words a pointer to a matrix to store the words.
- * @return true on success else false.
- */
-bool ImageFeatureExtractor::readVisualWords(string fileName)
-{
-    cout << "Reading the visual words file." << endl;
-
-    // Open the input file.
-    ifstream ifs;
-    ifs.open(fileName.c_str(), ios_base::binary);
-
-    if (!ifs.good())
-    {
-        cout << "Could not open the input file." << endl;
-        return false;
-    }
-
-    float c;
-    while (ifs.good())
-    {
-        Mat line(1, 128, CV_32F);
-        for (unsigned i_col = 0; i_col < 128; ++i_col)
-        {
-            ifs.read((char *)&c, sizeof(float));
-            line.at<float>(0, i_col) = c;
-        }
-        if (!ifs.good())
-            break;
-        words->push_back(line);
-        ifs.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    ifs.close();
 
     return true;
 }

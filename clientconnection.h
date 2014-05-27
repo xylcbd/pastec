@@ -1,15 +1,15 @@
 #ifndef CLIENTCONNECTION_H
 #define CLIENTCONNECTION_H
 
+#include <sys/types.h>
+
 #include "thread.h"
-#include "forwardindexbuilder.h"
-#include "backwardindexbuilder.h"
 
 
 class Server;
-class IndexMode;
 class ImageFeatureExtractor;
 class ImageSearcher;
+class Index;
 
 
 #define MAXMSG 2*1024*1024
@@ -24,31 +24,27 @@ struct Buffer
 class ClientConnection : public Thread
 {
 public:
-    ClientConnection(int socketFd, ForwardIndexBuilder *forwardIndexBuilder,
-                     BackwardIndexBuilder *backwardIndexBuilder,
+    ClientConnection(int socketFd,
                      ImageFeatureExtractor *imageFeatureExtractor,
-                     ImageSearcher *imageSearcher,
-                     IndexMode *mode, Server *server);
+                     ImageSearcher *imageSearcher, Index *index,
+                     Server *server);
     virtual ~ClientConnection();
     void stop();
     bool sendReply(unsigned i_replyLen, char *p_reply);
-    bool sendReply(char reply);
+    bool sendReply(u_int32_t reply);
 
 private:
     void *run();
     int readData();
     void parseMessages();
-    bool closeCurrentMode();
 
     int socketFd;
     int closeFd;
     int closeFdRead;
     Buffer buf;
-    ForwardIndexBuilder *forwardIndexBuilder;
-    BackwardIndexBuilder *backwardIndexBuilder;
     ImageFeatureExtractor *imageFeatureExtractor;
     ImageSearcher *imageSearcher;
-    IndexMode *mode;
+    Index *index;
     Server *server;
 };
 

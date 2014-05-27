@@ -8,7 +8,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 
-#include "forwardindexbuilder.h"
+#include "index.h"
+#include "wordindex.h"
 
 class ClientConnection;
 
@@ -20,9 +21,7 @@ using namespace std;
 class ImageFeatureExtractor
 {
 public:
-    ImageFeatureExtractor(String visualWordsPath, String indexPath);
-    void init();
-    void stop();
+    ImageFeatureExtractor(Index *index, WordIndex *wordIndex);
 
     bool processNewImage(unsigned i_imageId, unsigned i_imgSize,
                          char *p_imgData, ClientConnection *p_client);
@@ -30,12 +29,9 @@ public:
 private:
     bool openHitFile(ofstream &ofs, unsigned i_imageId);
     bool writeHit(ofstream &ofs, HitForward hit);
-    bool readVisualWords(string fileName);
 
-    String visualWordsPath;
-    String indexPath;
-    Mat *words;  // The matrix that stores the visual words.
-    flann::Index *index; // The kd-tree index.
+    Index *index;
+    WordIndex *wordIndex;
 };
 
 #endif // IMAGEPROCESSOR_H

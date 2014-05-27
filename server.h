@@ -7,11 +7,9 @@
 #include "thread.h"
 
 class ClientConnection;
-class ForwardIndexBuilder;
-class BackwardIndexBuilder;
 class ImageFeatureExtractor;
 class ImageSearcher;
-class IndexMode;
+class Index;
 
 using namespace std;
 
@@ -22,11 +20,8 @@ using namespace std;
 class Server : public Thread
 {
 public:
-    Server(ForwardIndexBuilder *forwardIndexBuilder,
-           BackwardIndexBuilder *backwardIndexBuilder,
-           ImageFeatureExtractor *imageProcessor,
-           ImageSearcher *imageSearcher,
-           IndexMode *mode);
+    Server(ImageFeatureExtractor *imageProcessor,
+           ImageSearcher *imageSearcher, Index *index);
     virtual ~Server();
     void stop();
     void removeClient(ClientConnection *c);
@@ -40,11 +35,9 @@ private:
     list<ClientConnection *> clientsToRemove;
     unsigned i_curNbClients;
 
-    ForwardIndexBuilder *forwardIndexBuilder;
-    BackwardIndexBuilder *backwardIndexBuilder;
     ImageFeatureExtractor *imageProcessor;
     ImageSearcher *imageSearcher;
-    IndexMode *mode;
+    Index *index;
 
     int sock;
     int closeFd;

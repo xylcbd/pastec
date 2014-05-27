@@ -13,50 +13,13 @@
 #include "dataMessages.h"
 
 
-ImageSearcher::ImageSearcher(string backwardIndexPath, string visualWordsPath,
-                             string indexPath)
-    : backwardIndexPath(backwardIndexPath), visualWordsPath(visualWordsPath),
-      indexPath(indexPath)
+ImageSearcher::ImageSearcher(Index *index, WordIndex *wordIndex)
+    : index(index), wordIndex(wordIndex)
 { }
 
 
 ImageSearcher::~ImageSearcher()
 { }
-
-
-/**
- * @brief Init the ImageSearcher.
- */
-void ImageSearcher::init()
-{
-    backwardIndex = new BackwardIndexReader(backwardIndexPath);
-
-    // Index reader initialization.
-    words = new Mat(0, 128, CV_32F); // The matrix that stores the visual words.
-    if (!readVisualWords(visualWordsPath, words))
-    {
-        cout << "Can't read the visual word file." << endl;
-        exit(1);
-    }
-    assert(words->rows == 1000000);
-
-    cout << "Building the kd-trees." << endl;
-    // myIndex = new flann::Index(*words, flann::KDTreeIndexParams());
-    myIndex = new flann::Index(*words, flann::SavedIndexParams(indexPath));
-
-    cout << "Ready to accept search queries." << endl;
-}
-
-
-/**
- * @brief Stop the ImageSearcher.
- */
-void ImageSearcher::stop()
-{
-    delete myIndex;
-    delete words;
-    delete backwardIndex;
-}
 
 
 /**
@@ -127,14 +90,14 @@ void ImageSearcher::searchImage(SearchRequest request)
 
         vector<int> indices(NB_NEIGHBORS);
         vector<float> dists(NB_NEIGHBORS);
-        myIndex->knnSearch(descriptors.row(i), indices,
+        wordIndex->knnSearch(descriptors.row(i), indices,
                            dists, NB_NEIGHBORS);
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
             /* If the word has a too large number of occurence in the index, we consider
              * that it is not relevant. */
-            if (backwardIndex->getWordNbOccurences(indices[j]) > backwardIndex->getMaxNbRecords())
+            if (index->getWordNbOccurences(indices[j]) > index->getMaxNbRecords())
                 continue;
 
             /*if (computeSIFTEntropy(indices[j]) < 3.)
@@ -153,11 +116,11 @@ void ImageSearcher::searchImage(SearchRequest request)
 
     cout << imageReqHits.size() << " SIFTs kept for the request." << endl;
 
-    const unsigned i_nbTotalIndexedImages = backwardIndex->getTotalNbIndexedImages();
+    const unsigned i_nbTotalIndexedImages = index->getTotalNbIndexedImages();
     cout << i_nbTotalIndexedImages << " images indexed in the index." << endl;
 
     unordered_map<u_int32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
-    backwardIndex->getImagesWithVisualWords(imageReqHits, indexHits);
+    index->getImagesWithVisualWords(imageReqHits, indexHits);
 
     gettimeofday(&t[2], NULL);
     cout << "time: " << getTimeDiff(t[1], t[2]) << " ms." << endl;
@@ -176,7 +139,7 @@ void ImageSearcher::searchImage(SearchRequest request)
         {
             /* TF-IDF according to the paper "Video Google:
              * A Text Retrieval Approach to Object Matching in Videos" */
-            unsigned i_totalNbWords = backwardIndex->countTotalNbWord(it2->i_imageId);
+            unsigned i_totalNbWords = index->countTotalNbWord(it2->i_imageId);
             weights[it2->i_imageId] += f_weight / i_totalNbWords * 4;
         }
     }
@@ -240,47 +203,6 @@ void ImageSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
 
 
 /**
- * @brief Read the list of visual words from an external file.
- * @param fileName the path of the input file name.
- * @param words a pointer to a matrix to store the words.
- * @return true on success else false.
- */
-bool ImageSearcher::readVisualWords(string fileName, Mat *words)
-{
-    cout << "Reading the visual words file." << endl;
-
-    // Open the input file.
-    ifstream ifs;
-    ifs.open(fileName.c_str(), ios_base::binary);
-
-    if (!ifs.good())
-    {
-        cout << "Could not open the input file." << endl;
-        return false;
-    }
-
-    float c;
-    while (ifs.good())
-    {
-        Mat line(1, 128, CV_32F);
-        for (unsigned i_col = 0; i_col < 128; ++i_col)
-        {
-            ifs.read((char *)&c, sizeof(float));
-            line.at<float>(0, i_col) = c;
-        }
-        if (!ifs.good())
-            break;
-        words->push_back(line);
-        ifs.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-
-    ifs.close();
-
-    return true;
-}
-
-
-/**
  * @brief Get the time difference in ms between two instants.
  * @param t1
  * @param t2
@@ -299,17 +221,17 @@ unsigned long ImageSearcher::getTimeDiff(const timeval t1, const timeval t2) con
 void ImageSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const
 {
     /* Search result:
-     * - 1 byte for the command code.
+     * - 4 byt for the command code.
      * - 4 bytes to give the number of images retrived.
      * - 4 bytes per image giving their ids.
      */
 
-    char *msg = new char[1 + 4 + imageIds.size() * sizeof(u_int32_t)];
+    char *msg = new char[4 + 4 + imageIds.size() * sizeof(u_int32_t)];
 
-    *(char *)(msg) = 1; // Result message.
-    *(u_int32_t *)(msg + 1) = imageIds.size();
+    *(u_int32_t *)msg = OK; // Result message.
+    *(u_int32_t *)(msg + 4) = imageIds.size();
 
-    char *p = msg + 5;
+    char *p = msg + 8;
     for (list<unsigned>::iterator it = imageIds.begin();
          it != imageIds.end(); ++it)
     {
@@ -318,27 +240,4 @@ void ImageSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds)
     }
 
     req.client->sendReply(p - msg, msg);
-}
-
-
-/**
- * @brief Compute the entropy of a SIFT keyword.
- * @param i_word the word id.
- * @return the entropy value.
- */
-float ImageSearcher::computeSIFTEntropy(unsigned i_word) const
-{
-    const Mat word = words->row(i_word);
-    float p_occurences[256] = {0};
-
-    for (unsigned i = 0; i < 128; ++i)
-        p_occurences[word.at<unsigned char>(0, i)] += 1. / 128;
-
-    float f_entropy = 0;
-    for (unsigned i = 0; i < 256; ++i)
-        if (p_occurences[i] > 0)
-            f_entropy -= p_occurences[i] * log(p_occurences[i]) / log(2.);
-
-    cout << "Entropy: " << f_entropy << endl;
-    return f_entropy;
 }

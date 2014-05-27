@@ -21,22 +21,32 @@ using namespace std::tr1;
 #define NB_VISUAL_WORDS 1000000
 #define BACKWARD_INDEX_ENTRY_SIZE 10
 
-class BackwardIndexReader
+/* Minimum of the number of hits before a visual word
+gets filtered out. */
+#define MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT 1000 * 10000
+
+class Index
 {
 public:
-    BackwardIndexReader(string backwardIndexPath);
-    ~BackwardIndexReader();
+    Index(string backwardIndexPath);
+    ~Index();
     void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                   unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
     unsigned getWordNbOccurences(unsigned i_wordId);
     unsigned countTotalNbWord(unsigned i_imageId);
     unsigned getTotalNbIndexedImages();
     unsigned getMaxNbRecords() const {return maxNbRecords;}
+    void addImage(list<HitForward> hitList);
+    bool write();
+    bool clear();
 
 private:
-    u_int64_t *wordOffSet;
-    u_int64_t *nbOccurences;
+    bool readIndex();
+
+    string mBackwardIndexPath;
+    u_int64_t nbOccurences[NB_VISUAL_WORDS];
     unsigned maxNbRecords;
+    u_int64_t totalNbRecords;
 
     unordered_map<u_int64_t, unsigned> nbWords;
     vector<Hit> indexHits[NB_VISUAL_WORDS];
