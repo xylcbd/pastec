@@ -17,4 +17,4 @@ class Query():
     SEARCH =                            0x00020000
     PING =                              0x00030000
     WRITE_INDEX =                       0x00040000
-    CLEAE_INDEX =                       0x00050000
+    CLEAR_INDEX =                       0x00050000

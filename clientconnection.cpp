@@ -205,6 +205,18 @@ void ClientConnection::parseMessages()
             buf.length -= 4;
             break;
         }
+        case CLEAR_INDEX:
+        {
+            bool success = index->clear();
+            if (success)
+                sendReply(OK);
+            else
+                sendReply(ERROR_GENERIC);
+
+            memmove(p, p + 4, buf.length - 4);
+            buf.length -= 4;
+            break;
+        }
         case PING:
         {
             sendReply(PONG);

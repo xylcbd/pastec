@@ -233,4 +233,6 @@ bool Index::clear()
 
     nbWords.clear();
     totalNbRecords = 0;
+
+    return true;
 }
