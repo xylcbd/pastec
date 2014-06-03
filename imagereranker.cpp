@@ -10,8 +10,8 @@
 #include "imagereranker.h"
 
 
-void ImageReranker::rerank(map<u_int32_t, list<Hit> > &imagesReqHits,
-                           map<u_int32_t, vector<Hit> > &indexHits,
+void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                           unordered_map<u_int32_t, vector<Hit> > &indexHits,
                            priority_queue<SearchResult> &rankedResultsIn,
                            priority_queue<SearchResult> &rankedResultsOut,
                            unsigned i_nbResults)
@@ -24,7 +24,7 @@ void ImageReranker::rerank(map<u_int32_t, list<Hit> > &imagesReqHits,
     // Compute the histograms.
     map<u_int32_t, Histogram> histograms; // key: the image id, value: the corresponding histogram.
 
-    for (map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
+    for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         // Try to match all the visual words of the request image.
@@ -72,7 +72,8 @@ void ImageReranker::rerank(map<u_int32_t, list<Hit> > &imagesReqHits,
         const unsigned i_imageId = it->first;
         const Histogram &histogram = it->second;
         unsigned i_maxVal = *max_element(histogram.bins, histogram.bins + HISTOGRAM_NB_BINS);
-        rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
+        if (i_maxVal >= 10)
+            rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
     }
 }
 
@@ -116,8 +117,7 @@ void ImageReranker::rerankRANSAC(unordered_map<u_int32_t, list<Hit> > &imagesReq
 
         /* If there are several hits for the same visual word,
          we don't take it into account. */
-        if (hits.size() > 1)
-            continue;
+        assert(hits.size() == 1);
 
         const Point2f point1(hits.front().x, hits.front().y);
         Pos p(hits.front().x, hits.front().y);
@@ -208,13 +208,13 @@ void *RANSACThread::run()
         mIt++; // Increment the iterator for the next iteration.
         pthread_mutex_unlock(p_itMutex);
 
-        #define MIN_NB_INLINERS 8
+        #define MIN_NB_INLINERS 12
 
         assert(task.points1.size() == task.points2.size());
         if (task.points1.size() >= MIN_NB_INLINERS)
         {
             Mat mask;
-            findHomography(task.points1, task.points2, CV_RANSAC, 800, mask);
+            findHomography(task.points1, task.points2, CV_RANSAC, 3, mask);
 
             // Count the number of inliners.
             unsigned i_nbInliners = 0;
@@ -232,87 +232,6 @@ void *RANSACThread::run()
     }
 
     return NULL;
-}
-
-
-void ImageReranker::rerankNearestNeighbors(map<u_int32_t, list<Hit> > &imagesReqHits,
-                                           map<u_int32_t, vector<Hit> > &indexHits,
-                                           priority_queue<SearchResult> &rankedResultsIn,
-                                           priority_queue<SearchResult> &rankedResultsOut,
-                                           unsigned i_nbResults)
-{
-    set<u_int32_t> firstImageIds;
-
-    map<u_int32_t, PointList> imgMatchedKeypointsPos;
-    map<u_int32_t, PointList> reqImgMatchedKeypointsPos;
-
-    // Extract the first i_nbResults ranked images.
-    getFirstImageIds(rankedResultsIn, i_nbResults, firstImageIds);
-
-    for (map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
-         it != imagesReqHits.end(); ++it)
-    {
-        // Try to match all the visual words of the request image.
-        const unsigned i_wordId = it->first;
-        const list<Hit> &hits = it->second;
-
-        for (list<Hit>::const_iterator it2 = hits.begin();
-             it2 != hits.end(); ++it2)
-        {
-            // If there is several hits for the same word in the image...
-            Mat point1(1, 2, CV_32S);
-            point1.at<int32_t>(0, 0) = it2->x;
-            point1.at<int32_t>(0, 1) = it2->y;
-            const vector<Hit> &hitIndex = indexHits[i_wordId];
-
-            for (unsigned i = 0; i < hitIndex.size(); ++i)
-            {
-                const u_int32_t i_imageId = hitIndex[i].i_imageId;
-                // Test if the image belongs to the image to rerank.
-                if (firstImageIds.find(i_imageId) != firstImageIds.end())
-                {
-                    Mat point2(1, 2, CV_32S);
-                    point2.at<int32_t>(0, 0) = hitIndex[i].x;
-                    point2.at<int32_t>(0, 1) = hitIndex[i].y;
-                    reqImgMatchedKeypointsPos[i_imageId].push_back(point1);
-                    imgMatchedKeypointsPos[i_imageId].push_back(point2);
-                }
-            }
-        }
-    }
-
-
-    for (set<u_int32_t>::iterator it = firstImageIds.begin();
-         it != firstImageIds.end(); ++it)
-    {
-        const u_int32_t imageId = *it;
-
-        cout << "Reranking image " << imageId << endl;
-
-        flann::Index indexImg(imgMatchedKeypointsPos[imageId], flann::KDTreeIndexParams());
-        flann::Index indexReqImg(reqImgMatchedKeypointsPos[imageId], flann::KDTreeIndexParams());
-
-        unsigned i_score = 0;
-        for (int i = 0; i < imgMatchedKeypointsPos[imageId].rows; ++i)
-        {
-            #define NB_NEAREST_NEIGHBORS 5
-
-            vector<int> indicesImg(NB_NEAREST_NEIGHBORS);
-            vector<float> distsImg(NB_NEAREST_NEIGHBORS);
-            indexImg.knnSearch(imgMatchedKeypointsPos[imageId].row(i), indicesImg, distsImg, NB_NEAREST_NEIGHBORS);
-
-            vector<int> indicesImgReq(NB_NEAREST_NEIGHBORS);
-            vector<float> distsImgReq(NB_NEAREST_NEIGHBORS);
-            indexReqImg.knnSearch(reqImgMatchedKeypointsPos[imageId].row(i), indicesImgReq, distsImgReq, NB_NEAREST_NEIGHBORS);
-
-            for (unsigned j = 0; j < NB_NEAREST_NEIGHBORS; ++j)
-                if (find(indicesImgReq.begin(), indicesImgReq.end(),
-                         indicesImg[j]) != indicesImgReq.end())
-                    i_score++;
-        }
-
-        rankedResultsOut.push(SearchResult(imageId, i_score));
-    }
 }
 
 

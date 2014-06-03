@@ -1,8 +1,10 @@
 #include <iostream>
 #include <set>
+#include <tr1/unordered_set>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include "imagefeatureextractor.h"
 #include "clientconnection.h"
@@ -65,7 +67,7 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
     vector<KeyPoint> keypoints;
     Mat descriptors;
 
-    SIFT()(img, noArray(), keypoints, descriptors);
+    ORB(1000, 1.02, 100)(img, noArray(), keypoints, descriptors);
 
     // Output the SIFT keypoints to the database.
 
@@ -79,38 +81,42 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
     }
 
     unsigned i_nbKeyPoints = 0;
-    vector<KeyPoint> cleanKeypoints;
     list<HitForward> imageHits;
+    unordered_set<u_int32_t> matchedWords;
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
-        cleanKeypoints.push_back(keypoints[i]);
         i_nbKeyPoints++;
 
         // Recording the angle on 16 bits.
         u_int16_t angle = keypoints[i].angle / 360 * (1 << 16);
-        u_int16_t x = keypoints[i].pt.x / i_imgWidth * (1 << 16);
-        u_int16_t y = keypoints[i].pt.y / i_imgHeight * (1 << 16);
+        u_int16_t x = keypoints[i].pt.x;
+        u_int16_t y = keypoints[i].pt.y;
 
-        vector<int> indices(4);
-        vector<float> dists(4);
-        wordIndex->knnSearch(descriptors.row(i), indices, dists, 4);
+        vector<int> indices(1);
+        vector<int> dists(1);
+        wordIndex->knnSearch(descriptors.row(i), indices, dists, 1);
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
-            HitForward newHit;
-            newHit.i_wordId = indices[j];
-            newHit.i_imageId = i_imageId;
-            newHit.i_angle = angle;
-            newHit.x = x;
-            newHit.y = y;
-            // Write the hit in the file.
-            if (!writeHit(ofs, newHit))
+            const unsigned i_wordId = indices[j];
+            if (matchedWords.find(i_wordId) == matchedWords.end())
             {
-                ofs.close();
-                p_client->sendReply(ERROR_GENERIC);
-                return false;
+                HitForward newHit;
+                newHit.i_wordId = i_wordId;
+                newHit.i_imageId = i_imageId;
+                newHit.i_angle = angle;
+                newHit.x = x;
+                newHit.y = y;
+                // Write the hit in the file.
+                if (!writeHit(ofs, newHit))
+                {
+                    ofs.close();
+                    p_client->sendReply(ERROR_GENERIC);
+                    return false;
+                }
+                imageHits.push_back(newHit);
+                matchedWords.insert(i_wordId);
             }
-            imageHits.push_back(newHit);
         }
     }
     // Record the hits.

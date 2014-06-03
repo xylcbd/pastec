@@ -1,5 +1,8 @@
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <cstdlib>
+#include <algorithm>
 #include <sys/time.h>
 
 #include "index.h"
@@ -88,8 +91,61 @@ void Index::addImage(list<HitForward> hitList)
         totalNbRecords++;
     }
 
-    if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
-        maxNbRecords = 0.00001 * totalNbRecords;
+    /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
+        maxNbRecords = 0.00001 * totalNbRecords;*/
+}
+
+
+/**
+ * @brief Remove all the hits of an image.
+ * @param i_imageId the image id.
+ * @return true on success else false.
+ */
+bool Index::removeImage(const unsigned i_imageId)
+{
+    ifstream ifs;
+
+    stringstream fileNameStream;
+    fileNameStream << "imageHits/" << i_imageId << ".dat";
+
+    ifs.open(fileNameStream.str().c_str(), ios_base::binary);
+
+    if (!ifs.good())
+    {
+        cout << "Could not open the hit output file." << endl;
+        ifs.close();
+        return false;
+    }
+
+    while (ifs.good())
+    {
+        HitForward hit;
+
+        ifs.read((char *)&hit.i_wordId, sizeof(u_int32_t));
+        ifs.read((char *)&hit.i_imageId, sizeof(u_int32_t));
+        ifs.read((char *)&hit.i_angle, sizeof(u_int16_t));
+        ifs.read((char *)&hit.x, sizeof(u_int16_t));
+        ifs.read((char *)&hit.y, sizeof(u_int16_t));
+
+        vector<Hit> &hits = indexHits[hit.i_wordId];
+
+        while (1)
+        {
+            vector<Hit>::iterator it = hits.begin();
+            while (it != hits.end())
+            {
+                if (it->i_imageId == i_imageId)
+                    break;
+                else
+                    ++it;
+            }
+            if (it == hits.end())
+                break;
+            hits.erase(it);
+        }
+    }
+
+    return true;
 }
 
 
@@ -136,8 +192,8 @@ bool Index::readIndex()
             totalNbRecords++;
         }
 
-        if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
-            maxNbRecords = 0.00001 * totalNbRecords;
+        /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
+            maxNbRecords = 0.00001 * totalNbRecords;*/
         unsigned i_nbSkipedWords = 0;
         for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
             if (nbOccurences[i] > maxNbRecords)

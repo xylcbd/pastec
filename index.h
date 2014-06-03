@@ -37,6 +37,7 @@ public:
     unsigned getTotalNbIndexedImages();
     unsigned getMaxNbRecords() const {return maxNbRecords;}
     void addImage(list<HitForward> hitList);
+    bool removeImage(const unsigned i_imageId);
     bool write();
     bool clear();
 

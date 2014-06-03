@@ -26,8 +26,7 @@ HEADERS += \
     index.h \
     wordindex.h
 
-LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_nonfree.a \
-        /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
+LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_features2d.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_imgproc.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_highgui.a \
@@ -45,5 +44,4 @@ INCLUDEPATH += /home/magsoft/trunks/opencv-2.4.6.1/modules/core/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/highgui/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/imgproc/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/flann/include \
-            /home/magsoft/trunks/opencv-2.4.6.1/modules/nonfree/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/calib3d/include

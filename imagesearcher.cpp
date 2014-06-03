@@ -3,10 +3,12 @@
 #include <sys/time.h>
 
 #include <set>
+#include <tr1/unordered_set>
 #include <tr1/unordered_map>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include "imagesearcher.h"
 #include "clientconnection.h"
@@ -75,7 +77,7 @@ void ImageSearcher::searchImage(SearchRequest request)
     vector<KeyPoint> keypoints;
     Mat descriptors;
 
-    SIFT(0, 4, 0.02, 10, 1.0)(img, noArray(), keypoints, descriptors);
+    ORB(1000, 1.02, 100)(img, noArray(), keypoints, descriptors);
     std::cout << "Nb SIFTs: " << keypoints.size() << std::endl;
 
     gettimeofday(&t[1], NULL);
@@ -89,32 +91,36 @@ void ImageSearcher::searchImage(SearchRequest request)
         #define NB_NEIGHBORS 1
 
         vector<int> indices(NB_NEIGHBORS);
-        vector<float> dists(NB_NEIGHBORS);
+        vector<int> dists(NB_NEIGHBORS);
         wordIndex->knnSearch(descriptors.row(i), indices,
                            dists, NB_NEIGHBORS);
 
         for (unsigned j = 0; j < indices.size(); ++j)
         {
-            /* If the word has a too large number of occurence in the index, we consider
-             * that it is not relevant. */
-            if (index->getWordNbOccurences(indices[j]) > index->getMaxNbRecords())
-                continue;
+            const unsigned i_wordId = indices[j];
+            if (imageReqHits.find(i_wordId) == imageReqHits.end())
+            {
+                /* If the word has a too large number of occurence in the index, we consider
+                 * that it is not relevant. */
+                if (index->getWordNbOccurences(i_wordId) > index->getMaxNbRecords())
+                    continue;
 
-            /*if (computeSIFTEntropy(indices[j]) < 3.)
-                continue;*/
+                /*if (computeSIFTEntropy(indices[j]) < 3.)
+                    continue;*/
 
-            // Convert the angle to a 16 bit integer.
-            Hit hit;
-            hit.i_imageId = 0;
-            hit.i_angle = keypoints[i].angle / 360 * (1 << 16);
-            hit.x = keypoints[i].pt.x / i_imgWidth * (1 << 16);
-            hit.y = keypoints[i].pt.y / i_imgHeight * (1 << 16);
+                // Convert the angle to a 16 bit integer.
+                Hit hit;
+                hit.i_imageId = 0;
+                hit.i_angle = keypoints[i].angle / 360 * (1 << 16);
+                hit.x = keypoints[i].pt.x;
+                hit.y = keypoints[i].pt.y;
 
-            imageReqHits[indices[j]].push_back(hit);
+                imageReqHits[i_wordId].push_back(hit);
+            }
         }
     }
 
-    cout << imageReqHits.size() << " SIFTs kept for the request." << endl;
+    cout << imageReqHits.size() << " visual words kept for the request." << endl;
 
     const unsigned i_nbTotalIndexedImages = index->getTotalNbIndexedImages();
     cout << i_nbTotalIndexedImages << " images indexed in the index." << endl;
@@ -134,13 +140,14 @@ void ImageSearcher::searchImage(SearchRequest request)
         const vector<Hit> &hits = it->second;
 
         const float f_weight = log((float)i_nbTotalIndexedImages / hits.size());
+
         for (vector<Hit>::const_iterator it2 = hits.begin();
              it2 != hits.end(); ++it2)
         {
             /* TF-IDF according to the paper "Video Google:
              * A Text Retrieval Approach to Object Matching in Videos" */
             unsigned i_totalNbWords = index->countTotalNbWord(it2->i_imageId);
-            weights[it2->i_imageId] += f_weight / i_totalNbWords * 4;
+            weights[it2->i_imageId] += f_weight / i_totalNbWords;
         }
     }
 
@@ -154,14 +161,14 @@ void ImageSearcher::searchImage(SearchRequest request)
     cout << "Reranking 300 among " << rankedResults.size() << " images." << endl;
 
     priority_queue<SearchResult> rerankedResults;
-    reranker.rerankRANSAC(imageReqHits, indexHits,
-                          rankedResults, rerankedResults, 300);
+    reranker.rerank(imageReqHits, indexHits,
+                    rankedResults, rerankedResults, 300);
 
     gettimeofday(&t[4], NULL);
     cout << "time: " << getTimeDiff(t[3], t[4]) << " ms." << endl;
     cout << "Returning the results. " << endl;
 
-    returnResults(rerankedResults, request, 300);
+    returnResults(rerankedResults, request, 100);
 
 #if 0
     // Draw keypoints and ellipses.

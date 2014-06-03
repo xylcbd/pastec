@@ -22,8 +22,8 @@ class ImageReranker
 {
 public:
     ImageReranker() {}
-    void rerank(map<u_int32_t, list<Hit> > &imagesReqHits,
-                map<u_int32_t, vector<Hit> > &indexHits,
+    void rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+                unordered_map<u_int32_t, vector<Hit> > &indexHits,
                 priority_queue<SearchResult> &rankedResultsIn,
                 priority_queue<SearchResult> &rankedResultsOut,
                 unsigned i_nbResults);
@@ -32,11 +32,6 @@ public:
                       priority_queue<SearchResult> &rankedResultsIn,
                       priority_queue<SearchResult> &rankedResultsOut,
                       unsigned i_nbResults);
-    void rerankNearestNeighbors(map<u_int32_t, list<Hit> > &imagesReqHits,
-                                map<u_int32_t, vector<Hit> > &indexHits,
-                                priority_queue<SearchResult> &rankedResultsIn,
-                                priority_queue<SearchResult> &rankedResultsOut,
-                                unsigned i_nbResults);
 
 private:
     float angleDiff(unsigned i_angle1, unsigned i_angle2);

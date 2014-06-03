@@ -13,16 +13,16 @@ using namespace std;
 class WordIndex
 {
 public:
-    WordIndex(string visualWordsPath, string indexPath);
+    WordIndex(string visualWordsPath);
     ~WordIndex();
-    void knnSearch(const vector<float>& query, vector<int>& indices,
-                   vector<float>& dists, int knn);
+    void knnSearch(const Mat &query, vector<int>& indices,
+                   vector<int> &dists, int knn);
 
 private:
     bool readVisualWords(string fileName);
 
     Mat *words;  // The matrix that stores the visual words.
-    flann::Index *kdIndex; // The kd-tree index.
+    cvflann::HierarchicalClusteringIndex<cvflann::Hamming<unsigned char> > *kdIndex; // The kd-tree index.
 };
 
 #endif // WORDINDEX_H
