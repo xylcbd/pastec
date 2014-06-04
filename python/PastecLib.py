@@ -65,6 +65,12 @@ class PastecConnection:
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
 
+    def removeImage(self, imageId):
+        d = struct.pack("II", Query.REMOVE_IMAGE, imageId)
+        self.sendData(d)
+        val = self.waitForReply()
+        self.raiseExceptionIfNeeded(val)
+
     def writeIndex(self):
         d = struct.pack("I", Query.WRITE_INDEX)
         self.sendData(d)

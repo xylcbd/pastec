@@ -8,7 +8,8 @@ enum Queries
     SEARCH =                            0x00020000,
     PING =                              0x00030000,
     WRITE_INDEX =                       0x00040000,
-    CLEAR_INDEX =                       0x00050000
+    CLEAR_INDEX =                       0x00050000,
+    REMOVE_IMAGE =                      0x00060000
 };
 
 enum Replies
@@ -26,6 +27,7 @@ enum Replies
 };
 
 #define MSG_INDEX_IMAGE_HEADER_LEN 12
+#define MSG_REMOVE_IMAGE_LEN 8
 
 
 #endif // MESSAGES_H

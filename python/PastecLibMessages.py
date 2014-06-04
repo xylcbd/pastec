@@ -18,3 +18,4 @@ class Query():
     PING =                              0x00030000
     WRITE_INDEX =                       0x00040000
     CLEAR_INDEX =                       0x00050000
+    REMOVE_IMAGE =                      0x00060000

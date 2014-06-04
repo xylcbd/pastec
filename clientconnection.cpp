@@ -193,6 +193,22 @@ void ClientConnection::parseMessages()
             buf.length -= i_msgSize;
             break;
         }
+        case REMOVE_IMAGE:
+        {
+            if (buf.length < MSG_REMOVE_IMAGE_LEN)
+                return; // The complete message was not received.
+
+            unsigned i_imageId = *(u_int32_t *)(p + 4);
+            bool success = index->removeImage(i_imageId);
+            if (success)
+                sendReply(OK);
+            else
+                sendReply(ERROR_GENERIC);
+
+            memmove(p, p + MSG_REMOVE_IMAGE_LEN, buf.length - MSG_REMOVE_IMAGE_LEN);
+            buf.length -= MSG_REMOVE_IMAGE_LEN;
+            break;
+        }
         case WRITE_INDEX:
         {
             bool success = index->write();
