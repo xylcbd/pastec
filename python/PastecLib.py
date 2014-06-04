@@ -5,6 +5,8 @@ import struct
 
 from PastecLibMessages import Reply, Query
 
+MAX_IMAGE_SIZE = 1024 * 1024
+
 
 class PastecException(Exception):
     def __init__(self, msg):
@@ -41,23 +43,14 @@ class PastecConnection:
         return val
 
     def indexImageFile(self, imageId, filePath):
-        fd = open(filePath, "rb")
-        imageData = b""
-        while 1:
-            buf = fd.read(1024)
-            # End of file
-            if not buf:
-                break
-            imageData += buf
-
-        self.indexImageData(imageId, imageData)
+        self.indexImageData(imageId, self.loadFileData(filePath))
 
     def indexImageData(self, imageId, imageData):
-        if len(imageData) > 1024 * 1024:
-            raise PastecException("Image file too big.")
+        if len(imageData) > MAX_IMAGE_SIZE:
+            raise PastecException("Image data size too big.")
 
-        d = struct.pack("I", Query.INDEX_IMAGE)
-        d += struct.pack("II", imageId, len(imageData))
+        d = struct.pack("III", Query.INDEX_IMAGE, \
+                        imageId, len(imageData))
         d += imageData
 
         self.sendData(d)
@@ -83,9 +76,14 @@ class PastecConnection:
         val = self.waitForReply()
         self.raiseExceptionIfNeeded(val)
 
-    def imageQuery(self, imageData):
-        d = struct.pack("I", Query.SEARCH)
-        d += struct.pack("I", len(imageData))
+    def imageQueryFile(self, filePath):
+        return self.imageQueryData(self.loadFileData(filePath))
+
+    def imageQueryData(self, imageData):
+        if len(imageData) > MAX_IMAGE_SIZE:
+            raise PastecException("Image data size too big.")
+
+        d = struct.pack("II", Query.SEARCH, len(imageData))
         d += imageData
 
         self.sendData(d)
@@ -112,7 +110,6 @@ class PastecConnection:
 
         # Extract the image ids.
         imageIds = []
-        print(nbImages)
         for i in range(nbImages):
             imageIds += [struct.unpack("I", msg[8 + 4 * i : 8 + 4 * (i + 1)])[0]]
 
@@ -126,12 +123,23 @@ class PastecConnection:
         elif val == Reply.TOO_MANY_CLIENTS:
             raise PastecException("Too many clients connected to the server.")
         if val == Reply.IMAGE_DATA_TOO_BIG:
-            raise PastecException("Image data too big.")
+            raise PastecException("Image data size too big.")
         elif val == Reply.IMAGE_SIZE_TOO_BIG:
-            raise PastecException("Image size too big.")
+            raise PastecException("Image dimenssions too big.")
         elif val == Reply.IMAGE_SIZE_TOO_SMALL:
             raise PastecException("Image size too small.")
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
         else:
             raise PastecException("Unkown error code: %#010x" % val)
+
+    def loadFileData(self, filePath):
+        fd = open(filePath, "rb")
+        imageData = b""
+        while 1:
+            buf = fd.read(1024)
+            # End of file
+            if not buf:
+                break
+            imageData += buf
+        return imageData
