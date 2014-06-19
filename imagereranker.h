@@ -84,7 +84,13 @@ public:
 
 struct Histogram
 {
+    Histogram() : i_total(0)
+    {
+        for (unsigned i = 0; i < HISTOGRAM_NB_BINS; ++i)
+            bins[i] = 0;
+    }
     unsigned bins[HISTOGRAM_NB_BINS];
+    unsigned i_total;
 };
 
 #endif // IMAGERERANKER_H

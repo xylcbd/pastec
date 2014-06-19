@@ -21,6 +21,8 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
     // Extract the first i_nbResults ranked images.
     getFirstImageIds(rankedResultsIn, i_nbResults, firstImageIds);
 
+    map<u_int32_t, RANSACTask> imgTasks;
+
     // Compute the histograms.
     map<u_int32_t, Histogram> histograms; // key: the image id, value: the corresponding histogram.
 
@@ -31,36 +33,30 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
         const unsigned i_wordId = it->first;
         const list<Hit> &hits = it->second;
 
-        for (list<Hit>::const_iterator it2 = hits.begin();
-             it2 != hits.end(); ++it2)
+        assert(hits.size() == 1);
+
+        // If there is several hits for the same word in the image...
+        const u_int16_t i_angle1 = hits.front().i_angle;
+        const Point2f point1(hits.front().x, hits.front().y);
+        const vector<Hit> &hitIndex = indexHits[i_wordId];
+
+        for (unsigned i = 0; i < hitIndex.size(); ++i)
         {
-            // If there is several hits for the same word in the image...
-            const u_int16_t i_angle1 = it2->i_angle;
-            const vector<Hit> &hitIndex = indexHits[i_wordId];
-
-            // Record the visual words that have already been matched.
-            set<pair<u_int32_t, u_int32_t> > entriesRecorded;
-
-            for (unsigned i = 0; i < hitIndex.size(); ++i)
+            const u_int32_t i_imageId = hitIndex[i].i_imageId;
+            // Test if the image belongs to the image to rerank.
+            if (firstImageIds.find(i_imageId) != firstImageIds.end())
             {
-                const u_int32_t i_imageId = hitIndex[i].i_imageId;
-                // Test if the image belongs to the image to rerank.
-                if (firstImageIds.find(i_imageId) != firstImageIds.end())
-                {
-                    const u_int16_t i_angle2 = hitIndex[i].i_angle;
-                    float f_diff = angleDiff(i_angle1, i_angle2);
-                    unsigned bin = f_diff / 360 * HISTOGRAM_NB_BINS;
-                    assert(bin < HISTOGRAM_NB_BINS);
+                const u_int16_t i_angle2 = hitIndex[i].i_angle;
+                float f_diff = angleDiff(i_angle1, i_angle2);
+                unsigned bin = f_diff / 360 * HISTOGRAM_NB_BINS;
+                assert(bin < HISTOGRAM_NB_BINS);
 
-                    pair<unsigned, unsigned> entry(i_imageId, bin);
-                    /* Add the bin to the histogram only if it has not been
-                     * already added for the given image. */
-                    if (entriesRecorded.find(entry) == entriesRecorded.end())
-                    {
-                        histograms[i_imageId].bins[bin]++;
-                        entriesRecorded.insert(entry);
-                    }
-                }
+                histograms[i_imageId].bins[bin]++;
+                histograms[i_imageId].i_total++;
+
+                const Point2f point2(hitIndex[i].x, hitIndex[i].y);
+                imgTasks[i_imageId].points1.push_back(point1);
+                imgTasks[i_imageId].points2.push_back(point2);
             }
         }
     }
@@ -72,8 +68,31 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
         const unsigned i_imageId = it->first;
         const Histogram &histogram = it->second;
         unsigned i_maxVal = *max_element(histogram.bins, histogram.bins + HISTOGRAM_NB_BINS);
-        if (i_maxVal >= 10)
-            rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
+        if ((float)i_maxVal / histogram.i_total >= 0.25
+            && i_maxVal > 6)
+        {
+            RANSACTask &task = imgTasks[i_imageId];
+            assert(task.points1.size() == task.points2.size());
+
+            #define MIN_NB_INLINERS 10
+
+            if (task.points1.size() >= MIN_NB_INLINERS)
+            {
+                Mat mask;
+                findHomography(task.points1, task.points2, CV_RANSAC, 3, mask);
+
+                // Count the number of inliners.
+                unsigned i_nbInliners = 0;
+                for (unsigned i = 0; i < task.points1.size(); ++i)
+                    if (mask.at<uchar>(0, i) == 1)
+                        i_nbInliners++;
+
+                if (i_nbInliners >= MIN_NB_INLINERS)
+                    rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
+                    //rankedResultsOut.push(SearchResult(i_nbInliners, i_imageId));
+            }
+
+        }
     }
 }
 
@@ -134,4 +153,3 @@ float ImageReranker::angleDiff(unsigned i_angle1, unsigned i_angle2)
 
     return diff;
 }
-
