@@ -50,7 +50,7 @@ Server::~Server()
  */
 void *Server::run()
 {
-    cout << "Starting server..." << endl;
+    cout << "Starting server." << endl;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
@@ -80,6 +80,8 @@ void *Server::run()
     fds[0].events = POLLIN;
     fds[1].fd = closeFdRead;
     fds[1].events = POLLIN;
+
+    cout << "Ready to accept querries." << endl;
 
     while (!b_mustStop)
     {

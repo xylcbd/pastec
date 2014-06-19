@@ -78,7 +78,6 @@ void ImageSearcher::searchImage(SearchRequest request)
     Mat descriptors;
 
     ORB(1000, 1.02, 100)(img, noArray(), keypoints, descriptors);
-    std::cout << "Nb SIFTs: " << keypoints.size() << std::endl;
 
     gettimeofday(&t[1], NULL);
 

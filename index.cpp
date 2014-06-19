@@ -93,6 +93,10 @@ void Index::addImage(list<HitForward> hitList)
 
     /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
         maxNbRecords = 0.00001 * totalNbRecords;*/
+
+    if (!hitList.empty())
+        cout << "Image " << hitList.begin()->i_imageId << " added: "
+             << hitList.size() << " hits." << endl;
 }
 
 
@@ -112,7 +116,8 @@ bool Index::removeImage(const unsigned i_imageId)
 
     if (!ifs.good())
     {
-        cout << "Could not open the hit output file." << endl;
+        cout << "Could not open the hit output file of the image: "
+             << i_imageId << "." << endl;
         ifs.close();
         return false;
     }
@@ -142,8 +147,11 @@ bool Index::removeImage(const unsigned i_imageId)
             if (it == hits.end())
                 break;
             hits.erase(it);
+            totalNbRecords--;
         }
     }
+
+    cout << "Image " << i_imageId << " removed." << endl;
 
     return true;
 }
@@ -178,7 +186,7 @@ bool Index::readIndex()
         }
 
         /* Count the number of words per image. */
-        cout << "Count the number of words per image." << endl;
+        cout << "Counting the number of words per image." << endl;
         totalNbRecords = 0;
         while (!indexAccess->endOfIndex())
         {
@@ -203,7 +211,7 @@ bool Index::readIndex()
 
         indexAccess->reset();
 
-        cout << "Loading the index in memory" << endl;
+        cout << "Loading the index in memory." << endl;
 
         for (unsigned i_wordId = 0; i_wordId < NB_VISUAL_WORDS; ++i_wordId)
         {
@@ -230,7 +238,6 @@ bool Index::readIndex()
 
         delete[] wordOffSet;
 
-        cout << "Done" << endl;
         return true;
     }
 }
@@ -289,6 +296,8 @@ bool Index::clear()
 
     nbWords.clear();
     totalNbRecords = 0;
+
+    cout << "Index cleared." << endl;
 
     return true;
 }

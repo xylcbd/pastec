@@ -124,7 +124,6 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
 
 
     ofs.close();
-    std::cout << "Nb SIFTs: " << i_nbKeyPoints << std::endl;
 
 #if 0
     // Draw keypoints.
