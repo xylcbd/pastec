@@ -26,9 +26,6 @@ public:
                          char *p_imgData, ClientConnection *p_client);
 
 private:
-    bool openHitFile(ofstream &ofs, unsigned i_imageId);
-    bool writeHit(ofstream &ofs, HitForward hit);
-
     Index *index;
     WordIndex *wordIndex;
 };

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <sys/time.h>
+#include <assert.h>
 
 #include "index.h"
 
@@ -74,16 +75,28 @@ unsigned Index::getTotalNbIndexedImages()
  * @brief Add a list of hits to the index.
  * @param  the list of hits.
  */
-void Index::addImage(list<HitForward> hitList)
+void Index::addImage(unsigned i_imageId, list<HitForward> hitList)
 {
+    ofstream ofs;
+    if (!openHitFile(ofs, i_imageId))
+        return;
+
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
     {
         HitForward hitFor = *it;
+        assert(i_imageId = hitFor.i_imageId);
         Hit hitBack;
         hitBack.i_imageId = hitFor.i_imageId;
         hitBack.i_angle = hitFor.i_angle;
         hitBack.x = hitFor.x;
         hitBack.y = hitFor.y;
+
+        // Write the hit to the forward file.
+        if (!writeHit(ofs, hitFor))
+        {
+            ofs.close();
+            return;
+        }
 
         indexHits[hitFor.i_wordId].push_back(hitBack);
         nbWords[hitFor.i_imageId]++;
@@ -93,6 +106,8 @@ void Index::addImage(list<HitForward> hitList)
 
     /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
         maxNbRecords = 0.00001 * totalNbRecords;*/
+
+    ofs.close();
 
     if (!hitList.empty())
         cout << "Image " << hitList.begin()->i_imageId << " added: "
@@ -298,6 +313,53 @@ bool Index::clear()
     totalNbRecords = 0;
 
     cout << "Index cleared." << endl;
+
+    return true;
+}
+
+
+/**
+ * @brief Open the file that will contain all hits of the image.
+ * @param i_imageId the image id.
+ * @return true on success else false.
+ */
+bool Index::openHitFile(ofstream &ofs, unsigned i_imageId)
+{
+    stringstream fileNameStream;
+    fileNameStream << "imageHits/" << i_imageId << ".dat";
+
+    ofs.open(fileNameStream.str().c_str(), ios_base::binary);
+
+    if (!ofs.good())
+    {
+        cout << "Could not open the hit output file." << endl;
+        ofs.close();
+        return false;
+    }
+
+    return true;
+}
+
+
+/**
+ * @brief Write a new hit in the file.
+ * @param hit the new hit to write.
+ * @param ofs the output file stream.
+ * @return true on success else false.
+ */
+bool Index::writeHit(ofstream &ofs, HitForward hit)
+{
+    if (!ofs.good())
+    {
+        cout << "Could not write to the output file." << endl;
+        return false;
+    }
+
+    ofs.write((char *)&hit.i_wordId, sizeof(u_int32_t));
+    ofs.write((char *)&hit.i_imageId, sizeof(u_int32_t));
+    ofs.write((char *)&hit.i_angle, sizeof(u_int16_t));
+    ofs.write((char *)&hit.x, sizeof(u_int16_t));
+    ofs.write((char *)&hit.y, sizeof(u_int16_t));
 
     return true;
 }

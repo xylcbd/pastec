@@ -36,13 +36,15 @@ public:
     unsigned countTotalNbWord(unsigned i_imageId);
     unsigned getTotalNbIndexedImages();
     unsigned getMaxNbRecords() const {return maxNbRecords;}
-    void addImage(list<HitForward> hitList);
+    void addImage(unsigned i_imageId, list<HitForward> hitList);
     bool removeImage(const unsigned i_imageId);
     bool write();
     bool clear();
 
 private:
     bool readIndex();
+    bool openHitFile(ofstream &ofs, unsigned i_imageId);
+    bool writeHit(ofstream &ofs, HitForward hit);
 
     string mBackwardIndexPath;
     u_int64_t nbOccurences[NB_VISUAL_WORDS];
