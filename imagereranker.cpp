@@ -74,12 +74,12 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
             RANSACTask &task = imgTasks[i_imageId];
             assert(task.points1.size() == task.points2.size());
 
-            #define MIN_NB_INLINERS 10
+            #define MIN_NB_INLINERS 6
 
             if (task.points1.size() >= MIN_NB_INLINERS)
             {
                 Mat mask;
-                findHomography(task.points1, task.points2, CV_RANSAC, 3, mask);
+                findHomography(task.points1, task.points2, CV_RANSAC, 1, mask);
 
                 // Count the number of inliners.
                 unsigned i_nbInliners = 0;
