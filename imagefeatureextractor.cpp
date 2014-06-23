@@ -46,8 +46,8 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
     unsigned i_imgHeight = img.rows;
 
 
-    if (i_imgWidth > 1000
-        || i_imgHeight > 1000)
+    if (i_imgWidth > 2000
+        || i_imgHeight > 2000)
     {
         cout << "Image too large." << endl;
         p_client->sendReply(IMAGE_SIZE_TOO_BIG);
