@@ -186,8 +186,10 @@ void ClientConnection::parseMessages()
             if (buf.length < i_msgSize)
                 return;
 
-            imageFeatureExtractor->processNewImage(i_imageId, i_imageSize,
-                                            p + MSG_INDEX_IMAGE_HEADER_LEN, this);
+            u_int32_t i_ret = imageFeatureExtractor->processNewImage(
+                i_imageId, i_imageSize, p + MSG_INDEX_IMAGE_HEADER_LEN, this);
+
+            sendReply(i_ret);
 
             memmove(p, p + i_msgSize, buf.length - i_msgSize);
             buf.length -= i_msgSize;

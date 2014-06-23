@@ -22,7 +22,7 @@ class ImageFeatureExtractor
 public:
     ImageFeatureExtractor(Index *index, WordIndex *wordIndex);
 
-    bool processNewImage(unsigned i_imageId, unsigned i_imgSize,
+    u_int32_t processNewImage(unsigned i_imageId, unsigned i_imgSize,
                          char *p_imgData, ClientConnection *p_client);
 
 private:

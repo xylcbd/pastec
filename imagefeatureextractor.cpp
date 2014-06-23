@@ -16,7 +16,7 @@ ImageFeatureExtractor::ImageFeatureExtractor(Index *index, WordIndex *wordIndex)
 { }
 
 
-bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
+u_int32_t ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
                                             char *p_imgData, ClientConnection *p_client)
 {
     vector<char> imgData(i_imgSize);
@@ -31,15 +31,13 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
     {
         const char* err_msg = e.what();
         cout << "Exception caught: " << err_msg << endl;
-        p_client->sendReply(IMAGE_NOT_DECODED);
-        return false;
+        return IMAGE_NOT_DECODED;
     }
 
     if (!img.data)
     {
         cout << "Error reading the image." << std::endl;
-        p_client->sendReply(IMAGE_NOT_DECODED);
-        return false;
+        return IMAGE_NOT_DECODED;
     }
 
     unsigned i_imgWidth = img.cols;
@@ -59,8 +57,7 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
         || i_imgHeight < 200)
     {
         cout << "Image too small." << endl;
-        p_client->sendReply(IMAGE_SIZE_TOO_SMALL);
-        return false;
+        return IMAGE_SIZE_TOO_SMALL;
     }
 #endif
 
@@ -101,8 +98,6 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
             }
         }
     }
-    // Record the hits.
-    index->addImage(i_imageId, imageHits);
 
 #if 0
     // Draw keypoints.
@@ -114,7 +109,6 @@ bool ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSi
     waitKey();
 #endif
 
-    p_client->sendReply(OK);
-
-    return true;
+    // Record the hits.
+    return index->addImage(i_imageId, imageHits);
 }

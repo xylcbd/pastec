@@ -130,6 +130,8 @@ class PastecConnection:
             raise PastecException("Image size too small.")
         elif val == Reply.IMAGE_NOT_DECODED:
             raise PastecException("The query image could not be decoded.")
+        elif val == Reply.IMAGE_ALREADY_IN_INDEX:
+            raise PastecException("An image with this id already exists in the index.")
         else:
             raise PastecException("Unkown error code: %#010x" % val)
 

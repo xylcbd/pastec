@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "index.h"
+#include "dataMessages.h"
 
 
 Index::Index(string backwardIndexPath)
@@ -75,11 +76,18 @@ unsigned Index::getTotalNbIndexedImages()
  * @brief Add a list of hits to the index.
  * @param  the list of hits.
  */
-void Index::addImage(unsigned i_imageId, list<HitForward> hitList)
+u_int32_t Index::addImage(unsigned i_imageId, list<HitForward> hitList)
 {
+    if (nbWords.find(i_imageId) != nbWords.end())
+    {
+        cout << "An image with the id " << i_imageId
+             << " already exists in the index." << endl;
+        return IMAGE_ALREADY_IN_INDEX;
+    }
+
     ofstream ofs;
     if (!openHitFile(ofs, i_imageId))
-        return;
+        return ERROR_GENERIC;
 
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
     {
@@ -95,7 +103,7 @@ void Index::addImage(unsigned i_imageId, list<HitForward> hitList)
         if (!writeHit(ofs, hitFor))
         {
             ofs.close();
-            return;
+            return ERROR_GENERIC;
         }
 
         indexHits[hitFor.i_wordId].push_back(hitBack);
@@ -112,6 +120,8 @@ void Index::addImage(unsigned i_imageId, list<HitForward> hitList)
     if (!hitList.empty())
         cout << "Image " << hitList.begin()->i_imageId << " added: "
              << hitList.size() << " hits." << endl;
+
+    return OK;
 }
 
 
