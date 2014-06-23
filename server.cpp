@@ -181,7 +181,7 @@ void *Server::run()
  */
 void Server::stop()
 {
-    write(closeFd, "1", 1);
+    assert(write(closeFd, "1", 1) == 1);
 }
 
 
