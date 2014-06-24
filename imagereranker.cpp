@@ -70,6 +70,7 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
         unsigned i_maxVal = *max_element(histogram.bins, histogram.bins + HISTOGRAM_NB_BINS);
         if (i_maxVal > 10)
         {
+#if 1
             RANSACTask &task = imgTasks[i_imageId];
             assert(task.points1.size() == task.points2.size());
 
@@ -90,7 +91,9 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                     rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
                     //rankedResultsOut.push(SearchResult(i_nbInliners, i_imageId));
             }
-
+#else
+            rankedResultsOut.push(SearchResult(i_maxVal, i_imageId));
+#endif
         }
     }
 }
