@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     imagereranker.cpp \
     imagefeatureextractor.cpp \
     index.cpp \
-    wordindex.cpp
+    wordindex.cpp \
+    imagererankerransac.cpp
 
 HEADERS += \
     server.h \

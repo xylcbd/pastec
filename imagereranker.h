@@ -6,6 +6,7 @@
 #include <queue>
 #include <list>
 #include <tr1/unordered_map>
+#include <set>
 
 #include <opencv2/core/core.hpp>
 
@@ -37,6 +38,12 @@ private:
     float angleDiff(unsigned i_angle1, unsigned i_angle2);
     void getFirstImageIds(priority_queue<SearchResult> &rankedResultsIn,
                           unsigned i_nbResults, set<u_int32_t> &firstImageIds);
+    cv::Mat findHomography(InputArray _points1, InputArray _points2,
+                            int method, double ransacReprojThreshold,
+                            OutputArray _mask);
+    int cvFindHomography(const CvMat* objectPoints, const CvMat* imagePoints,
+                         CvMat* __H, int method, double ransacReprojThreshold,
+                         CvMat* mask);
 };
 
 
@@ -91,6 +98,57 @@ struct Histogram
     }
     unsigned bins[HISTOGRAM_NB_BINS];
     unsigned i_total;
+};
+
+
+#define CV_RANSAC 8
+
+template<typename T> int icvCompressPoints( T* ptr, const uchar* mask, int mstep, int count );
+
+class CvModelEstimator2
+{
+public:
+    CvModelEstimator2(int _modelPoints, CvSize _modelSize, int _maxBasicSolutions);
+    virtual ~CvModelEstimator2();
+
+    virtual int runKernel( const CvMat* m1, const CvMat* m2, CvMat* model )=0;
+    virtual bool runLMeDS( const CvMat* m1, const CvMat* m2, CvMat* model,
+                           CvMat* mask, double confidence=0.99, int maxIters=2000 );
+    virtual bool runRANSAC( const CvMat* m1, const CvMat* m2, CvMat* model,
+                            CvMat* mask, double threshold,
+                            double confidence=0.99, int maxIters=2000 );
+    virtual bool refine( const CvMat*, const CvMat*, CvMat*, int ) { return true; }
+    virtual void setSeed( int64 seed );
+
+protected:
+    virtual void computeReprojError( const CvMat* m1, const CvMat* m2,
+                                     const CvMat* model, CvMat* error ) = 0;
+    virtual int findInliers( const CvMat* m1, const CvMat* m2,
+                             const CvMat* model, CvMat* error,
+                             CvMat* mask, double threshold );
+    virtual bool getSubset( const CvMat* m1, const CvMat* m2,
+                            CvMat* ms1, CvMat* ms2, int maxAttempts=1000 );
+    virtual bool checkSubset( const CvMat* ms1, int count );
+
+    CvRNG rng;
+    int modelPoints;
+    CvSize modelSize;
+    int maxBasicSolutions;
+    bool checkPartialSubsets;
+};
+
+
+class CvHomographyEstimator : public CvModelEstimator2
+{
+public:
+    CvHomographyEstimator( int modelPoints );
+
+    virtual int runKernel( const CvMat* m1, const CvMat* m2, CvMat* model );
+    virtual bool refine( const CvMat* m1, const CvMat* m2,
+                         CvMat* model, int maxIters );
+protected:
+    virtual void computeReprojError( const CvMat* m1, const CvMat* m2,
+                                     const CvMat* model, CvMat* error );
 };
 
 #endif // IMAGERERANKER_H

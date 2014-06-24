@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <set>
 
-#include <opencv2/calib3d/calib3d.hpp>
-
 #include "imagereranker.h"
 
 
