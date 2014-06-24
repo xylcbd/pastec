@@ -68,8 +68,7 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
         const unsigned i_imageId = it->first;
         const Histogram &histogram = it->second;
         unsigned i_maxVal = *max_element(histogram.bins, histogram.bins + HISTOGRAM_NB_BINS);
-        if ((float)i_maxVal / histogram.i_total >= 0.25
-            && i_maxVal > 6)
+        if (i_maxVal > 10)
         {
             RANSACTask &task = imgTasks[i_imageId];
             assert(task.points1.size() == task.points2.size());
