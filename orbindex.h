@@ -1,5 +1,5 @@
-#ifndef BACKWARDINDEXREADER_H
-#define BACKWARDINDEXREADER_H
+#ifndef ORBINDEX_H
+#define ORBINDEX_H
 
 #include <fstream>
 #include <string>
@@ -59,4 +59,4 @@ private:
     pthread_mutex_t readMutex;
 };
 
-#endif // BACKWARDINDEXREADER_H
+#endif // ORBINDEX_H
