@@ -8,7 +8,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "orbindex.h"
-#include "wordindex.h"
+#include "orbwordindex.h"
 
 class ClientConnection;
 
@@ -20,14 +20,14 @@ using namespace std;
 class ORBFeatureExtractor
 {
 public:
-    ORBFeatureExtractor(ORBIndex *index, WordIndex *wordIndex);
+    ORBFeatureExtractor(ORBIndex *index, ORBWordIndex *wordIndex);
 
     u_int32_t processNewImage(unsigned i_imageId, unsigned i_imgSize,
                               char *p_imgData);
 
 private:
     ORBIndex *index;
-    WordIndex *wordIndex;
+    ORBWordIndex *wordIndex;
 };
 
 #endif // IMAGEPROCESSOR_H

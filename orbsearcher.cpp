@@ -16,7 +16,7 @@
 #include "imageloader.h"
 
 
-ORBSearcher::ORBSearcher(ORBIndex *index, WordIndex *wordIndex)
+ORBSearcher::ORBSearcher(ORBIndex *index, ORBWordIndex *wordIndex)
     : index(index), wordIndex(wordIndex)
 { }
 

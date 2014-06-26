@@ -7,7 +7,7 @@
 #include <opencv2/flann/flann.hpp>
 
 #include "orbindex.h"
-#include "wordindex.h"
+#include "orbwordindex.h"
 #include "searchResult.h"
 #include "imagereranker.h"
 
@@ -27,7 +27,7 @@ struct SearchRequest
 class ORBSearcher
 {
 public:
-    ORBSearcher(ORBIndex *index, WordIndex *wordIndex);
+    ORBSearcher(ORBIndex *index, ORBWordIndex *wordIndex);
     virtual ~ORBSearcher();
     u_int32_t searchImage(SearchRequest request);
 
@@ -38,7 +38,7 @@ private:
     void sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const;
 
     ORBIndex *index;
-    WordIndex *wordIndex;
+    ORBWordIndex *wordIndex;
     ImageReranker reranker;
 };
 

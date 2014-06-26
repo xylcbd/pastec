@@ -12,7 +12,7 @@
 #include "imageloader.h"
 
 
-ORBFeatureExtractor::ORBFeatureExtractor(ORBIndex *index, WordIndex *wordIndex)
+ORBFeatureExtractor::ORBFeatureExtractor(ORBIndex *index, ORBWordIndex *wordIndex)
     : index(index), wordIndex(wordIndex)
 { }
 

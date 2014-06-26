@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 
-#include "wordindex.h"
+#include "orbwordindex.h"
 
 
-WordIndex::WordIndex(string visualWordsPath)
+ORBWordIndex::ORBWordIndex(string visualWordsPath)
 {
     words = new Mat(0, 32, CV_8U); // The matrix that stores the visual words.
 
@@ -22,14 +22,14 @@ WordIndex::WordIndex(string visualWordsPath)
 }
 
 
-WordIndex::~WordIndex()
+ORBWordIndex::~ORBWordIndex()
 {
     delete words;
     delete kdIndex;
 }
 
 
-void WordIndex::knnSearch(const Mat& query, vector<int>& indices,
+void ORBWordIndex::knnSearch(const Mat& query, vector<int>& indices,
                           vector<int>& dists, int knn)
 {
     cvflann::KNNResultSet<int> m_indices(knn);
@@ -47,7 +47,7 @@ void WordIndex::knnSearch(const Mat& query, vector<int>& indices,
  * @param words a pointer to a matrix to store the words.
  * @return true on success else false.
  */
-bool WordIndex::readVisualWords(string fileName)
+bool ORBWordIndex::readVisualWords(string fileName)
 {
     cout << "Reading the visual words file." << endl;
 

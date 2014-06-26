@@ -1,5 +1,5 @@
-#ifndef WORDINDEX_H
-#define WORDINDEX_H
+#ifndef ORBWORDINDEX_H
+#define ORBWORDINDEX_H
 
 #include <vector>
 
@@ -10,11 +10,11 @@ using namespace cv;
 using namespace std;
 
 
-class WordIndex
+class ORBWordIndex
 {
 public:
-    WordIndex(string visualWordsPath);
-    ~WordIndex();
+    ORBWordIndex(string visualWordsPath);
+    ~ORBWordIndex();
     void knnSearch(const Mat &query, vector<int>& indices,
                    vector<int> &dists, int knn);
 
@@ -25,4 +25,4 @@ private:
     cvflann::HierarchicalClusteringIndex<cvflann::Hamming<unsigned char> > *kdIndex; // The kd-tree index.
 };
 
-#endif // WORDINDEX_H
+#endif // ORBWORDINDEX_H
