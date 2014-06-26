@@ -187,7 +187,7 @@ void ClientConnection::parseMessages()
                 return;
 
             u_int32_t i_ret = imageFeatureExtractor->processNewImage(
-                i_imageId, i_imageSize, p + MSG_INDEX_IMAGE_HEADER_LEN, this);
+                i_imageId, i_imageSize, p + MSG_INDEX_IMAGE_HEADER_LEN);
 
             sendReply(i_ret);
 
@@ -260,7 +260,9 @@ void ClientConnection::parseMessages()
             req.imageData.resize(i_imageSize);
             req.client = this;
             memcpy((void *)&req.imageData[0], p + 8, i_imageSize);
-            imageSearcher->searchImage(req);
+            u_int32_t i_ret = imageSearcher->searchImage(req);
+            if (i_ret != OK)
+                sendReply(i_ret);
 
             assert(i_msgSize >= buf.length);
             memmove(p, p + i_msgSize, buf.length - i_msgSize);

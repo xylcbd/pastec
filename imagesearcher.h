@@ -19,7 +19,7 @@ class ClientConnection;
 
 struct SearchRequest
 {
-    vector<char *> imageData;
+    vector<char> imageData;
     ClientConnection *client;
 };
 
@@ -29,7 +29,7 @@ class ImageSearcher
 public:
     ImageSearcher(Index *index, WordIndex *wordIndex);
     virtual ~ImageSearcher();
-    void searchImage(SearchRequest request);
+    u_int32_t searchImage(SearchRequest request);
 
 private:
     void returnResults(priority_queue<SearchResult> &rankedResults,

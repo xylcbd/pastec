@@ -9,6 +9,7 @@
 #include "imagefeatureextractor.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
+#include "imageloader.h"
 
 
 ImageFeatureExtractor::ImageFeatureExtractor(Index *index, WordIndex *wordIndex)
@@ -17,49 +18,15 @@ ImageFeatureExtractor::ImageFeatureExtractor(Index *index, WordIndex *wordIndex)
 
 
 u_int32_t ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
-                                            char *p_imgData, ClientConnection *p_client)
+                                                 char *p_imgData)
 {
     vector<char> imgData(i_imgSize);
     memcpy(imgData.data(), p_imgData, i_imgSize);
 
     Mat img;
-    try
-    {
-        img = imdecode(imgData, CV_LOAD_IMAGE_GRAYSCALE);
-    }
-    catch (cv::Exception& e) // The decoding of an image can raise an exception.
-    {
-        const char* err_msg = e.what();
-        cout << "Exception caught: " << err_msg << endl;
-        return IMAGE_NOT_DECODED;
-    }
-
-    if (!img.data)
-    {
-        cout << "Error reading the image." << std::endl;
-        return IMAGE_NOT_DECODED;
-    }
-
-    unsigned i_imgWidth = img.cols;
-    unsigned i_imgHeight = img.rows;
-
-
-    if (i_imgWidth > 2000
-        || i_imgHeight > 2000)
-    {
-        cout << "Image too large." << endl;
-        p_client->sendReply(IMAGE_SIZE_TOO_BIG);
-        return false;
-    }
-
-#if 1
-    if (i_imgWidth < 200
-        || i_imgHeight < 200)
-    {
-        cout << "Image too small." << endl;
-        return IMAGE_SIZE_TOO_SMALL;
-    }
-#endif
+    u_int32_t i_ret = ImageLoader::loadImage(i_imgSize, p_imgData, img);
+    if (i_ret != OK)
+        return i_ret;
 
     vector<KeyPoint> keypoints;
     Mat descriptors;

@@ -23,7 +23,7 @@ public:
     ImageFeatureExtractor(Index *index, WordIndex *wordIndex);
 
     u_int32_t processNewImage(unsigned i_imageId, unsigned i_imgSize,
-                         char *p_imgData, ClientConnection *p_client);
+                              char *p_imgData);
 
 private:
     Index *index;

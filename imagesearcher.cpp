@@ -13,6 +13,7 @@
 #include "imagesearcher.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
+#include "imageloader.h"
 
 
 ImageSearcher::ImageSearcher(Index *index, WordIndex *wordIndex)
@@ -28,7 +29,7 @@ ImageSearcher::~ImageSearcher()
  * @brief Processed a search request.
  * @param request the request to proceed.
  */
-void ImageSearcher::searchImage(SearchRequest request)
+u_int32_t ImageSearcher::searchImage(SearchRequest request)
 {
     timeval t[5];
     gettimeofday(&t[0], NULL);
@@ -36,43 +37,10 @@ void ImageSearcher::searchImage(SearchRequest request)
     cout << "Loading the image and extracting the SIFTs." << endl;
 
     Mat img;
-    try
-    {
-        img = imdecode(request.imageData, CV_LOAD_IMAGE_GRAYSCALE);
-    }
-    catch (cv::Exception& e) // The decoding of an image can raise an exception.
-    {
-        const char* err_msg = e.what();
-        cout << "Exception caught: " << err_msg << endl;
-        request.client->sendReply(IMAGE_NOT_DECODED);
-    }
-
-    if (!img.data)
-    {
-        cout << "Error reading the image." << std::endl;
-        request.client->sendReply(IMAGE_NOT_DECODED);
-    }
-
-    unsigned i_imgWidth = img.cols;
-    unsigned i_imgHeight = img.rows;
-
-    if (i_imgWidth > 1000
-        || i_imgHeight > 1000)
-    {
-        cout << "Image too large." << endl;
-        request.client->sendReply(IMAGE_SIZE_TOO_BIG);
-        return;
-    }
-
-#if 1
-    if (i_imgWidth < 200
-        || i_imgHeight < 200)
-    {
-        cout << "Image too small." << endl;
-        request.client->sendReply(IMAGE_SIZE_TOO_SMALL);
-        return;
-    }
-#endif
+    u_int32_t i_ret = ImageLoader::loadImage(request.imageData.size(),
+                                             request.imageData.data(), img);
+    if (i_ret != OK)
+        return i_ret;
 
     vector<KeyPoint> keypoints;
     Mat descriptors;
@@ -179,6 +147,8 @@ void ImageSearcher::searchImage(SearchRequest request)
     // Show the image.
     imshow("Keypoints 1", img_res);
 #endif
+
+    return OK;
 }
 
 
