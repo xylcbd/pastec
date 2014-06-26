@@ -17,7 +17,7 @@
 
 
 Server::Server(ORBFeatureExtractor *imageProcessor,
-               ORBSearcher *imageSearcher, ORBIndex *index)
+               ORBSearcher *imageSearcher, Index *index)
     : portNumber(4212),
       i_curNbClients(0),
       imageProcessor(imageProcessor),
