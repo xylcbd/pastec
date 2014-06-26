@@ -201,11 +201,8 @@ void ClientConnection::parseMessages()
                 return; // The complete message was not received.
 
             unsigned i_imageId = *(u_int32_t *)(p + 4);
-            bool success = index->removeImage(i_imageId);
-            if (success)
-                sendReply(OK);
-            else
-                sendReply(ERROR_GENERIC);
+            u_int32_t i_ret = index->removeImage(i_imageId);
+            sendReply(i_ret);
 
             memmove(p, p + MSG_REMOVE_IMAGE_LEN, buf.length - MSG_REMOVE_IMAGE_LEN);
             buf.length -= MSG_REMOVE_IMAGE_LEN;

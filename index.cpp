@@ -130,7 +130,7 @@ u_int32_t Index::addImage(unsigned i_imageId, list<HitForward> hitList)
  * @param i_imageId the image id.
  * @return true on success else false.
  */
-bool Index::removeImage(const unsigned i_imageId)
+u_int32_t Index::removeImage(const unsigned i_imageId)
 {
     ifstream ifs;
 
@@ -144,7 +144,7 @@ bool Index::removeImage(const unsigned i_imageId)
         cout << "Could not open the hit output file of the image: "
              << i_imageId << "." << endl;
         ifs.close();
-        return false;
+        return IMAGE_NOT_FOUND;
     }
 
     while (ifs.good())
@@ -178,7 +178,7 @@ bool Index::removeImage(const unsigned i_imageId)
 
     cout << "Image " << i_imageId << " removed." << endl;
 
-    return true;
+    return OK;
 }
 
 

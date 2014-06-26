@@ -25,6 +25,7 @@ enum Replies
     IMAGE_NOT_DECODED =                 0x10050400,
     IMAGE_SIZE_TOO_SMALL =              0x10050500,
     IMAGE_ALREADY_IN_INDEX =            0x10050600,
+    IMAGE_NOT_FOUND =                   0x10050600,
 };
 
 #define MSG_INDEX_IMAGE_HEADER_LEN 12
