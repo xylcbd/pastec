@@ -9,8 +9,10 @@ class HitForward;
 
 class Index
 {
-    virtual u_int32_t addImage(unsigned i_imageId, list<HitForward> hitList) = 0;
+public:
     virtual u_int32_t removeImage(const unsigned i_imageId) = 0;
+    virtual bool write() = 0;
+    virtual bool clear() = 0;
 };
 
 #endif // INDEX_H
