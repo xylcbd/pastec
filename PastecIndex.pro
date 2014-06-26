@@ -27,7 +27,8 @@ HEADERS += \
     orbfeatureextractor.h \
     orbsearcher.h \
     orbindex.h \
-    orbwordindex.h
+    orbwordindex.h \
+    index.h
 
 LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_features2d.a \

@@ -13,6 +13,7 @@
 
 #include "hit.h"
 #include "backwardindexreaderaccess.h"
+#include "index.h"
 
 using namespace std;
 using namespace std::tr1;
@@ -25,11 +26,11 @@ using namespace std::tr1;
 gets filtered out. */
 #define MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT 1000 * 10000
 
-class ORBIndex
+class ORBIndex : public Index
 {
 public:
     ORBIndex(string backwardIndexPath);
-    ~ORBIndex();
+    virtual ~ORBIndex();
     void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                   unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
     unsigned getWordNbOccurences(unsigned i_wordId);
