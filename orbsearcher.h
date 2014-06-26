@@ -34,8 +34,6 @@ public:
 private:
     void returnResults(priority_queue<SearchResult> &rankedResults,
                        SearchRequest &req, unsigned i_maxNbResults);
-    void writeResultsHTML(priority_queue<SearchResult> &rankedResults,
-                          string htmlPagePath, unsigned i_maxNbResults);
     unsigned long getTimeDiff(const timeval t1, const timeval t2) const;
     void sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const;
 
