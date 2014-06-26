@@ -17,10 +17,10 @@ using namespace cv;
 using namespace std;
 
 
-class ImageFeatureExtractor
+class ORBFeatureExtractor
 {
 public:
-    ImageFeatureExtractor(Index *index, WordIndex *wordIndex);
+    ORBFeatureExtractor(Index *index, WordIndex *wordIndex);
 
     u_int32_t processNewImage(unsigned i_imageId, unsigned i_imgSize,
                               char *p_imgData);

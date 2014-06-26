@@ -6,18 +6,18 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include "imagefeatureextractor.h"
+#include "orbfeatureextractor.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
 #include "imageloader.h"
 
 
-ImageFeatureExtractor::ImageFeatureExtractor(Index *index, WordIndex *wordIndex)
+ORBFeatureExtractor::ORBFeatureExtractor(Index *index, WordIndex *wordIndex)
     : index(index), wordIndex(wordIndex)
 { }
 
 
-u_int32_t ImageFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
+u_int32_t ORBFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
                                                  char *p_imgData)
 {
     vector<char> imgData(i_imgSize);

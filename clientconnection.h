@@ -7,7 +7,7 @@
 
 
 class Server;
-class ImageFeatureExtractor;
+class ORBFeatureExtractor;
 class ImageSearcher;
 class Index;
 
@@ -25,7 +25,7 @@ class ClientConnection : public Thread
 {
 public:
     ClientConnection(int socketFd,
-                     ImageFeatureExtractor *imageFeatureExtractor,
+                     ORBFeatureExtractor *imageFeatureExtractor,
                      ImageSearcher *imageSearcher, Index *index,
                      Server *server);
     virtual ~ClientConnection();
@@ -42,7 +42,7 @@ private:
     int closeFd;
     int closeFdRead;
     Buffer buf;
-    ImageFeatureExtractor *imageFeatureExtractor;
+    ORBFeatureExtractor *orbFeatureExtractor;
     ImageSearcher *imageSearcher;
     Index *index;
     Server *server;

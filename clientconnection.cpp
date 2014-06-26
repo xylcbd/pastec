@@ -9,15 +9,15 @@
 #include "clientconnection.h"
 #include "dataMessages.h"
 #include "server.h"
-#include "imagefeatureextractor.h"
+#include "orbfeatureextractor.h"
 #include "imagesearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd,
-                                   ImageFeatureExtractor *imageProcessor,
+                                   ORBFeatureExtractor *imageProcessor,
                                    ImageSearcher *imageSearcher, Index *index,
                                    Server *server)
-    : socketFd(socketFd), imageFeatureExtractor(imageProcessor),
+    : socketFd(socketFd), orbFeatureExtractor(imageProcessor),
       imageSearcher(imageSearcher), index(index),
       server(server)
 {
@@ -186,7 +186,7 @@ void ClientConnection::parseMessages()
             if (buf.length < i_msgSize)
                 return;
 
-            u_int32_t i_ret = imageFeatureExtractor->processNewImage(
+            u_int32_t i_ret = orbFeatureExtractor->processNewImage(
                 i_imageId, i_imageSize, p + MSG_INDEX_IMAGE_HEADER_LEN);
 
             sendReply(i_ret);
