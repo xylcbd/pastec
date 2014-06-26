@@ -15,7 +15,7 @@
 
 ClientConnection::ClientConnection(int socketFd,
                                    ORBFeatureExtractor *imageProcessor,
-                                   ORBSearcher *imageSearcher, Index *index,
+                                   ORBSearcher *imageSearcher, ORBIndex *index,
                                    Server *server)
     : socketFd(socketFd), orbFeatureExtractor(imageProcessor),
       imageSearcher(imageSearcher), index(index),

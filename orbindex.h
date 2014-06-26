@@ -25,11 +25,11 @@ using namespace std::tr1;
 gets filtered out. */
 #define MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT 1000 * 10000
 
-class Index
+class ORBIndex
 {
 public:
-    Index(string backwardIndexPath);
-    ~Index();
+    ORBIndex(string backwardIndexPath);
+    ~ORBIndex();
     void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                   unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
     unsigned getWordNbOccurences(unsigned i_wordId);

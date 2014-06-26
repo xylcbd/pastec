@@ -6,11 +6,11 @@
 #include <sys/time.h>
 #include <assert.h>
 
-#include "index.h"
+#include "orbindex.h"
 #include "dataMessages.h"
 
 
-Index::Index(string backwardIndexPath)
+ORBIndex::ORBIndex(string backwardIndexPath)
     : mBackwardIndexPath(backwardIndexPath),
       maxNbRecords(1000000)
 {
@@ -30,13 +30,13 @@ Index::Index(string backwardIndexPath)
  * @param i_wordId the word id.
  * @return the number of occurences.
  */
-unsigned Index::getWordNbOccurences(unsigned i_wordId)
+unsigned ORBIndex::getWordNbOccurences(unsigned i_wordId)
 {
     return nbOccurences[i_wordId];
 }
 
 
-Index::~Index()
+ORBIndex::~ORBIndex()
 {
     indexAccess->close();
     delete indexAccess;
@@ -44,7 +44,7 @@ Index::~Index()
 }
 
 
-void Index::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
+void ORBIndex::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                      unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq)
 {
     pthread_mutex_lock(&readMutex);
@@ -60,13 +60,13 @@ void Index::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &image
 }
 
 
-unsigned Index::countTotalNbWord(unsigned i_imageId)
+unsigned ORBIndex::countTotalNbWord(unsigned i_imageId)
 {
     return nbWords[i_imageId];
 }
 
 
-unsigned Index::getTotalNbIndexedImages()
+unsigned ORBIndex::getTotalNbIndexedImages()
 {
     return nbWords.size();
 }
@@ -76,7 +76,7 @@ unsigned Index::getTotalNbIndexedImages()
  * @brief Add a list of hits to the index.
  * @param  the list of hits.
  */
-u_int32_t Index::addImage(unsigned i_imageId, list<HitForward> hitList)
+u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
 {
     if (nbWords.find(i_imageId) != nbWords.end())
     {
@@ -130,7 +130,7 @@ u_int32_t Index::addImage(unsigned i_imageId, list<HitForward> hitList)
  * @param i_imageId the image id.
  * @return true on success else false.
  */
-u_int32_t Index::removeImage(const unsigned i_imageId)
+u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
 {
     ifstream ifs;
 
@@ -186,7 +186,7 @@ u_int32_t Index::removeImage(const unsigned i_imageId)
  * @brief Read the index and store it in memory.
  * @return true on success else false
  */
-bool Index::readIndex()
+bool ORBIndex::readIndex()
 {
     // Open the file.
     indexAccess = new BackwardIndexReaderFileAccess();
@@ -272,7 +272,7 @@ bool Index::readIndex()
  * @brief Write the index in memory to a file.
  * @return true on success else false
  */
-bool Index::write()
+bool ORBIndex::write()
 {
     ofstream ofs;
 
@@ -310,7 +310,7 @@ bool Index::write()
  * @brief Clear the index.
  * @return true on success else false.
  */
-bool Index::clear()
+bool ORBIndex::clear()
 {
     // Reset the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
@@ -333,7 +333,7 @@ bool Index::clear()
  * @param i_imageId the image id.
  * @return true on success else false.
  */
-bool Index::openHitFile(ofstream &ofs, unsigned i_imageId)
+bool ORBIndex::openHitFile(ofstream &ofs, unsigned i_imageId)
 {
     stringstream fileNameStream;
     fileNameStream << "imageHits/" << i_imageId << ".dat";
@@ -357,7 +357,7 @@ bool Index::openHitFile(ofstream &ofs, unsigned i_imageId)
  * @param ofs the output file stream.
  * @return true on success else false.
  */
-bool Index::writeHit(ofstream &ofs, HitForward hit)
+bool ORBIndex::writeHit(ofstream &ofs, HitForward hit)
 {
     if (!ofs.good())
     {

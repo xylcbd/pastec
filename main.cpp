@@ -19,7 +19,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    Index *index = new Index("backwardIndex.dat");
+    ORBIndex *index = new ORBIndex("backwardIndex.dat");
     WordIndex *wordIndex = new WordIndex(string(argv[1]));
     ORBFeatureExtractor *ife = new ORBFeatureExtractor(index, wordIndex);
     ORBSearcher *is = new ORBSearcher(index, wordIndex);

@@ -9,7 +9,7 @@
 class Server;
 class ORBFeatureExtractor;
 class ORBSearcher;
-class Index;
+class ORBIndex;
 
 
 #define MAXMSG 2*1024*1024
@@ -26,7 +26,7 @@ class ClientConnection : public Thread
 public:
     ClientConnection(int socketFd,
                      ORBFeatureExtractor *imageFeatureExtractor,
-                     ORBSearcher *imageSearcher, Index *index,
+                     ORBSearcher *imageSearcher, ORBIndex *index,
                      Server *server);
     virtual ~ClientConnection();
     void stop();
@@ -44,7 +44,7 @@ private:
     Buffer buf;
     ORBFeatureExtractor *orbFeatureExtractor;
     ORBSearcher *imageSearcher;
-    Index *index;
+    ORBIndex *index;
     Server *server;
 };
 

@@ -9,7 +9,7 @@
 class ClientConnection;
 class ORBFeatureExtractor;
 class ORBSearcher;
-class Index;
+class ORBIndex;
 
 using namespace std;
 
@@ -21,7 +21,7 @@ class Server : public Thread
 {
 public:
     Server(ORBFeatureExtractor *imageProcessor,
-           ORBSearcher *imageSearcher, Index *index);
+           ORBSearcher *imageSearcher, ORBIndex *index);
     virtual ~Server();
     void stop();
     void removeClient(ClientConnection *c);
@@ -37,7 +37,7 @@ private:
 
     ORBFeatureExtractor *imageProcessor;
     ORBSearcher *imageSearcher;
-    Index *index;
+    ORBIndex *index;
 
     int sock;
     int closeFd;
