@@ -24,11 +24,11 @@ struct SearchRequest
 };
 
 
-class ImageSearcher
+class ORBSearcher
 {
 public:
-    ImageSearcher(Index *index, WordIndex *wordIndex);
-    virtual ~ImageSearcher();
+    ORBSearcher(Index *index, WordIndex *wordIndex);
+    virtual ~ORBSearcher();
     u_int32_t searchImage(SearchRequest request);
 
 private:

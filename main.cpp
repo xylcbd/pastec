@@ -2,7 +2,7 @@
 
 #include "server.h"
 #include "orbfeatureextractor.h"
-#include "imagesearcher.h"
+#include "orbsearcher.h"
 #include "wordindex.h"
 
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     Index *index = new Index("backwardIndex.dat");
     WordIndex *wordIndex = new WordIndex(string(argv[1]));
     ORBFeatureExtractor *ife = new ORBFeatureExtractor(index, wordIndex);
-    ImageSearcher *is = new ImageSearcher(index, wordIndex);
+    ORBSearcher *is = new ORBSearcher(index, wordIndex);
     Server *s = new Server(ife, is, index);
 
     s->start();

@@ -6,20 +6,19 @@ CONFIG -= qt
 SOURCES += main.cpp \
     server.cpp \
     clientconnection.cpp \
-    imagesearcher.cpp \
     imagereranker.cpp \
     index.cpp \
     wordindex.cpp \
     imagererankerransac.cpp \
     imageloader.cpp \
-    orbfeatureextractor.cpp
+    orbfeatureextractor.cpp \
+    orbsearcher.cpp
 
 HEADERS += \
     server.h \
     thread.h \
     dataMessages.h \
     clientconnection.h \
-    imagesearcher.h \
     hit.h \
     searchResult.h \
     imagereranker.h \
@@ -27,7 +26,8 @@ HEADERS += \
     index.h \
     wordindex.h \
     imageloader.h \
-    orbfeatureextractor.h
+    orbfeatureextractor.h \
+    orbsearcher.h
 
 LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_features2d.a \

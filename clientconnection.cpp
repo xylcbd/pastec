@@ -10,12 +10,12 @@
 #include "dataMessages.h"
 #include "server.h"
 #include "orbfeatureextractor.h"
-#include "imagesearcher.h"
+#include "orbsearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd,
                                    ORBFeatureExtractor *imageProcessor,
-                                   ImageSearcher *imageSearcher, Index *index,
+                                   ORBSearcher *imageSearcher, Index *index,
                                    Server *server)
     : socketFd(socketFd), orbFeatureExtractor(imageProcessor),
       imageSearcher(imageSearcher), index(index),

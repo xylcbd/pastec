@@ -10,18 +10,18 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include "imagesearcher.h"
+#include "orbsearcher.h"
 #include "clientconnection.h"
 #include "dataMessages.h"
 #include "imageloader.h"
 
 
-ImageSearcher::ImageSearcher(Index *index, WordIndex *wordIndex)
+ORBSearcher::ORBSearcher(Index *index, WordIndex *wordIndex)
     : index(index), wordIndex(wordIndex)
 { }
 
 
-ImageSearcher::~ImageSearcher()
+ORBSearcher::~ORBSearcher()
 { }
 
 
@@ -29,7 +29,7 @@ ImageSearcher::~ImageSearcher()
  * @brief Processed a search request.
  * @param request the request to proceed.
  */
-u_int32_t ImageSearcher::searchImage(SearchRequest request)
+u_int32_t ORBSearcher::searchImage(SearchRequest request)
 {
     timeval t[5];
     gettimeofday(&t[0], NULL);
@@ -158,7 +158,7 @@ u_int32_t ImageSearcher::searchImage(SearchRequest request)
  * @param req the received search request.
  * @param i_maxNbResults the maximum number of results returned.
  */
-void ImageSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
+void ORBSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
                                   SearchRequest &req, unsigned i_maxNbResults)
 {
     list<u_int32_t> imageIds;
@@ -183,7 +183,7 @@ void ImageSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
  * @param t1
  * @param t2
  */
-unsigned long ImageSearcher::getTimeDiff(const timeval t1, const timeval t2) const
+unsigned long ORBSearcher::getTimeDiff(const timeval t1, const timeval t2) const
 {
     return ((t2.tv_sec - t1.tv_sec) * 1000000
             + (t2.tv_usec - t1.tv_usec)) / 1000;
@@ -194,7 +194,7 @@ unsigned long ImageSearcher::getTimeDiff(const timeval t1, const timeval t2) con
  * @brief Send the list of mathched image id to the client.
  * @param imageIds the list of image id results.
  */
-void ImageSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const
+void ORBSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const
 {
     /* Search result:
      * - 4 byt for the command code.

@@ -4,10 +4,14 @@ import PastecLib
 
 c = PastecLib.PastecConnection()
 c.connect()
-#c.indexImageFile(1, "/home/magsoft/Bureau/testPastec/starTrek.jpg")
-#c.indexImageFile(2, "/home/magsoft/Bureau/testPastec/test.jpg")
-fd = open("/home/magsoft/Bureau/testPastec/test.jpg", "rb")
-data = fd.read(1024*1024)
-print(c.imageQuery(data))
 
-c.writeIndex()
+c.clearIndex()
+
+for i in range(1, 24):
+    c.indexImageFile(i, "/home/magsoft/Bureau/test/%d.jpg" % i)
+
+#c.removeImage(22)
+
+print(c.imageQueryFile("/home/magsoft/Bureau/test/test4.jpg"))
+
+#c.writeIndex()
