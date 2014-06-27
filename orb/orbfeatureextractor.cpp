@@ -20,9 +20,6 @@ ORBFeatureExtractor::ORBFeatureExtractor(ORBIndex *index, ORBWordIndex *wordInde
 u_int32_t ORBFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
                                                  char *p_imgData)
 {
-    vector<char> imgData(i_imgSize);
-    memcpy(imgData.data(), p_imgData, i_imgSize);
-
     Mat img;
     u_int32_t i_ret = ImageLoader::loadImage(i_imgSize, p_imgData, img);
     if (i_ret != OK)
