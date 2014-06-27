@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "server.h"
-#include "orbfeatureextractor.h"
-#include "orbsearcher.h"
-#include "orbwordindex.h"
+#include "orb/orbfeatureextractor.h"
+#include "orb/orbsearcher.h"
+#include "orb/orbwordindex.h"
 
 
 using namespace std;

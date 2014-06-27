@@ -10,7 +10,7 @@
 #include "dataMessages.h"
 #include "server.h"
 #include "featureextractor.h"
-#include "orbsearcher.h"
+#include "orb/orbsearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd,

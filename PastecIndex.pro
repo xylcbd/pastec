@@ -9,10 +9,10 @@ SOURCES += main.cpp \
     imagereranker.cpp \
     imagererankerransac.cpp \
     imageloader.cpp \
-    orbfeatureextractor.cpp \
-    orbsearcher.cpp \
-    orbindex.cpp \
-    orbwordindex.cpp
+    orb/orbfeatureextractor.cpp \
+    orb/orbindex.cpp \
+    orb/orbsearcher.cpp \
+    orb/orbwordindex.cpp
 
 HEADERS += \
     server.h \
@@ -24,12 +24,12 @@ HEADERS += \
     imagereranker.h \
     backwardindexreaderaccess.h \
     imageloader.h \
-    orbfeatureextractor.h \
-    orbsearcher.h \
-    orbindex.h \
-    orbwordindex.h \
     index.h \
-    featureextractor.h
+    featureextractor.h \
+    orb/orbfeatureextractor.h \
+    orb/orbindex.h \
+    orb/orbsearcher.h \
+    orb/orbwordindex.h
 
 LIBS += /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_calib3d.a \
         /home/magsoft/trunks/opencv-2.4.6.1/build/lib/libopencv_features2d.a \
