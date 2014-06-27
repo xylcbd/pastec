@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     Index *index = new ORBIndex("backwardIndex.dat");
     ORBWordIndex *wordIndex = new ORBWordIndex(string(argv[1]));
-    ORBFeatureExtractor *ife = new ORBFeatureExtractor((ORBIndex *)index, wordIndex);
+    FeatureExtractor *ife = new ORBFeatureExtractor((ORBIndex *)index, wordIndex);
     ORBSearcher *is = new ORBSearcher((ORBIndex *)index, wordIndex);
     Server *s = new Server(ife, is, index);
 
@@ -30,6 +30,7 @@ int main(int argc, char** argv)
     s->join();
 
     delete s;
+    delete (ORBFeatureExtractor *)ife;
     delete (ORBIndex *)index;
 
     return 0;

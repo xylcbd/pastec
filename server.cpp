@@ -16,7 +16,7 @@
 #include "dataMessages.h"
 
 
-Server::Server(ORBFeatureExtractor *imageProcessor,
+Server::Server(FeatureExtractor *imageProcessor,
                ORBSearcher *imageSearcher, Index *index)
     : portNumber(4212),
       i_curNbClients(0),

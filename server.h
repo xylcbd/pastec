@@ -7,7 +7,7 @@
 #include "thread.h"
 
 class ClientConnection;
-class ORBFeatureExtractor;
+class FeatureExtractor;
 class ORBSearcher;
 class Index;
 
@@ -20,7 +20,7 @@ using namespace std;
 class Server : public Thread
 {
 public:
-    Server(ORBFeatureExtractor *imageProcessor,
+    Server(FeatureExtractor *imageProcessor,
            ORBSearcher *imageSearcher, Index *index);
     virtual ~Server();
     void stop();
@@ -35,7 +35,7 @@ private:
     list<ClientConnection *> clientsToRemove;
     unsigned i_curNbClients;
 
-    ORBFeatureExtractor *imageProcessor;
+    FeatureExtractor *imageProcessor;
     ORBSearcher *imageSearcher;
     Index *index;
 

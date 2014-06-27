@@ -9,12 +9,12 @@
 #include "clientconnection.h"
 #include "dataMessages.h"
 #include "server.h"
-#include "orbfeatureextractor.h"
+#include "featureextractor.h"
 #include "orbsearcher.h"
 
 
 ClientConnection::ClientConnection(int socketFd,
-                                   ORBFeatureExtractor *imageProcessor,
+                                   FeatureExtractor *imageProcessor,
                                    ORBSearcher *imageSearcher, Index *index,
                                    Server *server)
     : socketFd(socketFd), orbFeatureExtractor(imageProcessor),

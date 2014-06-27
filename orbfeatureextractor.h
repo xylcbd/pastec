@@ -9,6 +9,7 @@
 
 #include "orbindex.h"
 #include "orbwordindex.h"
+#include "featureextractor.h"
 
 class ClientConnection;
 
@@ -17,10 +18,11 @@ using namespace cv;
 using namespace std;
 
 
-class ORBFeatureExtractor
+class ORBFeatureExtractor : public FeatureExtractor
 {
 public:
     ORBFeatureExtractor(ORBIndex *index, ORBWordIndex *wordIndex);
+    virtual ~ORBFeatureExtractor() {}
 
     u_int32_t processNewImage(unsigned i_imageId, unsigned i_imgSize,
                               char *p_imgData);
