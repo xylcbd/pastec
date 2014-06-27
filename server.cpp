@@ -17,7 +17,7 @@
 
 
 Server::Server(FeatureExtractor *imageProcessor,
-               ORBSearcher *imageSearcher, Index *index)
+               Searcher *imageSearcher, Index *index)
     : portNumber(4212),
       i_curNbClients(0),
       imageProcessor(imageProcessor),

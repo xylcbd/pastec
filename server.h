@@ -8,7 +8,7 @@
 
 class ClientConnection;
 class FeatureExtractor;
-class ORBSearcher;
+class Searcher;
 class Index;
 
 using namespace std;
@@ -21,7 +21,7 @@ class Server : public Thread
 {
 public:
     Server(FeatureExtractor *imageProcessor,
-           ORBSearcher *imageSearcher, Index *index);
+           Searcher *imageSearcher, Index *index);
     virtual ~Server();
     void stop();
     void removeClient(ClientConnection *c);
@@ -36,7 +36,7 @@ private:
     unsigned i_curNbClients;
 
     FeatureExtractor *imageProcessor;
-    ORBSearcher *imageSearcher;
+    Searcher *imageSearcher;
     Index *index;
 
     int sock;

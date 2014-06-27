@@ -6,6 +6,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/flann/flann.hpp>
 
+#include "searcher.h"
 #include "orbindex.h"
 #include "orbwordindex.h"
 #include "searchResult.h"
@@ -17,14 +18,7 @@ using namespace std;
 class ClientConnection;
 
 
-struct SearchRequest
-{
-    vector<char> imageData;
-    ClientConnection *client;
-};
-
-
-class ORBSearcher
+class ORBSearcher : public Searcher
 {
 public:
     ORBSearcher(ORBIndex *index, ORBWordIndex *wordIndex);
