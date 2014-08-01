@@ -1,6 +1,7 @@
 #ifndef SEARCHER_H
 #define SEARCHER_H
 
+#include <sys/types.h>
 #include <vector>
 
 using namespace std;

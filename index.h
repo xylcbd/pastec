@@ -1,6 +1,7 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <sys/types.h>
 #include <list>
 
 using namespace std;

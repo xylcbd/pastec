@@ -1,6 +1,8 @@
 #ifndef FEATUREEXTRACTOR_H
 #define FEATUREEXTRACTOR_H
 
+#include <sys/types.h>
+
 
 class FeatureExtractor
 {
