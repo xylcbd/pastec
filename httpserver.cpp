@@ -99,6 +99,8 @@ int HTTPServer::answerToConnection(void *cls, MHD_Connection *connection,
             conInfo->connectionType = GET;
         else if (strcmp(method, "DELETE") == 0)
             conInfo->connectionType = DELETE;
+        else if (strcmp(method, "PUT") == 0)
+            conInfo->connectionType = PUT;
 
         conInfo->url = string(url);
 
@@ -112,7 +114,8 @@ int HTTPServer::answerToConnection(void *cls, MHD_Connection *connection,
     if (conInfo->connectionType == GET
         || conInfo->connectionType == DELETE)
         s->requestHandler->handleRequest(*conInfo);
-    else if (conInfo->connectionType == POST)
+    else if (conInfo->connectionType == POST
+             || conInfo->connectionType == PUT)
     {
         if (*upload_data_size != 0)
         {
