@@ -30,10 +30,6 @@ private:
     static void requestCompleted(void *cls, MHD_Connection *connection,
                                  void **con_cls, MHD_RequestTerminationCode toe);
     static int sendAnswer(struct MHD_Connection *connection, ConnectionInfo &conInfo);
-    static int iteratePost(void *coninfo_cls, MHD_ValueKind kind, const char *key,
-                           const char *filename, const char *content_type,
-                           const char *transfer_encoding, const char *data, uint64_t off,
-                           size_t size);
 
     MHD_Daemon *daemon;
     RequestHandler *requestHandler;

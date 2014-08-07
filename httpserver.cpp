@@ -20,10 +20,6 @@ HTTPServer::HTTPServer(RequestHandler *requestHandler)
 #define MAXCLIENTS      2
 
 
-static unsigned int nr_of_uploading_clients = 0;
-
-
-
 int HTTPServer::start()
 {
     daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, PORT, NULL, NULL,
@@ -64,22 +60,6 @@ int HTTPServer::sendAnswer(struct MHD_Connection *connection, ConnectionInfo &co
 }
 
 
-int HTTPServer::iteratePost(void *coninfo_cls, MHD_ValueKind kind, const char *key,
-                            const char *filename, const char *content_type,
-                            const char *transfer_encoding, const char *data, uint64_t off,
-                            size_t size)
-{
-    (void)kind; (void)key; (void)filename;
-    (void)content_type, (void)transfer_encoding; (void)off;
-    ConnectionInfo *conInfo = (ConnectionInfo *)coninfo_cls;
-
-    if (size > 0)
-        conInfo->uploadedData.insert(conInfo->uploadedData.end(), data, data + size);
-
-    return MHD_YES;
-}
-
-
 void HTTPServer::requestCompleted(void *cls, MHD_Connection *connection,
                                   void **conCls, enum MHD_RequestTerminationCode toe)
 {
@@ -114,20 +94,7 @@ int HTTPServer::answerToConnection(void *cls, MHD_Connection *connection,
             return MHD_NO;
 
         if (strcmp(method, "POST") == 0)
-        {
-            conInfo->postprocessor = MHD_create_post_processor(connection, POSTBUFFERSIZE,
-                                                               iteratePost, (void *) conInfo);
-
-            if (conInfo->postprocessor == NULL)
-            {
-                delete conInfo;
-                return MHD_NO;
-            }
-
-            nr_of_uploading_clients++;
-
             conInfo->connectionType = POST;
-        }
         else if (strcmp(method, "GET") == 0)
             conInfo->connectionType = GET;
         else if (strcmp(method, "DELETE") == 0)
@@ -149,8 +116,8 @@ int HTTPServer::answerToConnection(void *cls, MHD_Connection *connection,
     {
         if (*upload_data_size != 0)
         {
-            MHD_post_process(conInfo->postprocessor, upload_data,
-                             *upload_data_size);
+            conInfo->uploadedData.insert(conInfo->uploadedData.end(),
+                upload_data, upload_data + *upload_data_size);
             *upload_data_size = 0;
 
             return MHD_YES;
