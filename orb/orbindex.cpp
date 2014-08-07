@@ -20,7 +20,7 @@ ORBIndex::ORBIndex()
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
         nbOccurences[i] = 0;
 
-    readIndex("backwardIndex.dat");
+    readIndex(DEFAULT_INDEX_PATH);
 }
 
 
@@ -245,6 +245,9 @@ bool ORBIndex::readIndex(string backwardIndexPath)
  */
 u_int32_t ORBIndex::write(string backwardIndexPath)
 {
+    if (backwardIndexPath == "")
+        backwardIndexPath = DEFAULT_INDEX_PATH;
+
     ofstream ofs;
 
     ofs.open(backwardIndexPath.c_str(), ios_base::binary);

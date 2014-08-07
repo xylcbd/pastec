@@ -9,6 +9,8 @@ using namespace std;
 
 class HitForward;
 
+#define DEFAULT_INDEX_PATH "backwardIndex.dat"
+
 class Index
 {
 public:
