@@ -29,7 +29,7 @@ ORBSearcher::~ORBSearcher()
  * @brief Processed a search request.
  * @param request the request to proceed.
  */
-u_int32_t ORBSearcher::searchImage(SearchRequest request)
+u_int32_t ORBSearcher::searchImage(SearchRequest &request)
 {
     timeval t[5];
     gettimeofday(&t[0], NULL);

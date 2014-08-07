@@ -19,7 +19,7 @@ struct SearchRequest
 class Searcher
 {
 public:
-    virtual u_int32_t searchImage(SearchRequest request) = 0;
+    virtual u_int32_t searchImage(SearchRequest &request) = 0;
 };
 
 #endif // SEARCHER_H
