@@ -101,7 +101,7 @@ void RequestHandler::handleRequest(ConnectionInfo &conInfo)
     conInfo.answerCode = MHD_HTTP_OK;
 
     if (testURIWithPattern(parsedURI, p_image)
-        && conInfo.connectionType == POST)
+        && conInfo.connectionType == PUT)
     {
         u_int32_t i_imageId = atoi(parsedURI[2].c_str());
 
