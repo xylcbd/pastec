@@ -171,6 +171,7 @@ void ORBSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
         imageIds.push_back(res.i_imageId);
         i_res++;
         cout << "Id: " << res.i_imageId << ", score: " << res.f_weight << endl;
+        req.results.push_back(res.i_imageId);
         rankedResults.pop();
     }
 
@@ -215,5 +216,6 @@ void ORBSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) c
         p += sizeof(u_int32_t);
     }
 
-    req.client->sendReply(p - msg, msg);
+    if (req.client != NULL)
+        req.client->sendReply(p - msg, msg);
 }

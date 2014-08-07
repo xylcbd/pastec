@@ -12,7 +12,9 @@ SOURCES += main.cpp \
     orb/orbfeatureextractor.cpp \
     orb/orbindex.cpp \
     orb/orbsearcher.cpp \
-    orb/orbwordindex.cpp
+    orb/orbwordindex.cpp \
+    httpserver.cpp \
+    requesthandler.cpp
 
 HEADERS += \
     server.h \
@@ -30,7 +32,9 @@ HEADERS += \
     orb/orbindex.h \
     orb/orbsearcher.h \
     orb/orbwordindex.h \
-    searcher.h
+    searcher.h \
+    httpserver.h \
+    requesthandler.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \
@@ -43,6 +47,8 @@ LIBS += -pthread \
         -pthread \
         -lpq \
         -ljpeg -lpng -ltiff \
+        -lmicrohttpd \
+        -ljsoncpp
 
 INCLUDEPATH += /home/magsoft/trunks/opencv-2.4.6.1/modules/core/include \
             /home/magsoft/trunks/opencv-2.4.6.1/modules/features2d/include \

@@ -10,9 +10,8 @@
 #include "dataMessages.h"
 
 
-ORBIndex::ORBIndex(string backwardIndexPath)
-    : mBackwardIndexPath(backwardIndexPath),
-      maxNbRecords(1000000)
+ORBIndex::ORBIndex()
+    : maxNbRecords(1000000)
 {
     // Init the mutex.
     pthread_mutex_init(&readMutex, NULL);
@@ -21,7 +20,7 @@ ORBIndex::ORBIndex(string backwardIndexPath)
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
         nbOccurences[i] = 0;
 
-    readIndex();
+    readIndex("backwardIndex.dat");
 }
 
 
@@ -85,10 +84,6 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         return IMAGE_ALREADY_IN_INDEX;
     }
 
-    ofstream ofs;
-    if (!openHitFile(ofs, i_imageId))
-        return ERROR_GENERIC;
-
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
     {
         HitForward hitFor = *it;
@@ -99,13 +94,6 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         hitBack.x = hitFor.x;
         hitBack.y = hitFor.y;
 
-        // Write the hit to the forward file.
-        if (!writeHit(ofs, hitFor))
-        {
-            ofs.close();
-            return ERROR_GENERIC;
-        }
-
         indexHits[hitFor.i_wordId].push_back(hitBack);
         nbWords[hitFor.i_imageId]++;
         nbOccurences[hitFor.i_wordId]++;
@@ -114,8 +102,6 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
 
     /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
         maxNbRecords = 0.00001 * totalNbRecords;*/
-
-    ofs.close();
 
     if (!hitList.empty())
         cout << "Image " << hitList.begin()->i_imageId << " added: "
@@ -132,47 +118,31 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
  */
 u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
 {
-    ifstream ifs;
+    unordered_map<u_int64_t, unsigned>::iterator imgIt =
+        nbWords.find(i_imageId);
 
-    stringstream fileNameStream;
-    fileNameStream << "imageHits/" << i_imageId << ".dat";
-
-    ifs.open(fileNameStream.str().c_str(), ios_base::binary);
-
-    if (!ifs.good())
+    if (imgIt == nbWords.end())
     {
-        cout << "Could not open the hit output file of the image: "
-             << i_imageId << "." << endl;
-        ifs.close();
+        cout << "Image " << i_imageId << " not found." << endl;
         return IMAGE_NOT_FOUND;
     }
 
-    while (ifs.good())
+    nbWords.erase(imgIt);
+
+    for (unsigned i_wordId = 0; i_wordId < NB_VISUAL_WORDS; ++i_wordId)
     {
-        HitForward hit;
+        vector<Hit> &hits = indexHits[i_wordId];
+        vector<Hit>::iterator it = hits.begin();
 
-        ifs.read((char *)&hit.i_wordId, sizeof(u_int32_t));
-        ifs.read((char *)&hit.i_imageId, sizeof(u_int32_t));
-        ifs.read((char *)&hit.i_angle, sizeof(u_int16_t));
-        ifs.read((char *)&hit.x, sizeof(u_int16_t));
-        ifs.read((char *)&hit.y, sizeof(u_int16_t));
-
-        vector<Hit> &hits = indexHits[hit.i_wordId];
-
-        while (1)
+        while (it != hits.end())
         {
-            vector<Hit>::iterator it = hits.begin();
-            while (it != hits.end())
+            if (it->i_imageId == i_imageId)
             {
-                if (it->i_imageId == i_imageId)
-                    break;
-                else
-                    ++it;
-            }
-            if (it == hits.end())
+                totalNbRecords--;
+                hits.erase(it);
                 break;
-            hits.erase(it);
-            totalNbRecords--;
+            }
+            ++it;
         }
     }
 
@@ -186,11 +156,11 @@ u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
  * @brief Read the index and store it in memory.
  * @return true on success else false
  */
-bool ORBIndex::readIndex()
+bool ORBIndex::readIndex(string backwardIndexPath)
 {
     // Open the file.
     indexAccess = new BackwardIndexReaderFileAccess();
-    if (!indexAccess->open(mBackwardIndexPath))
+    if (!indexAccess->open(backwardIndexPath))
     {
         cout << "Could not open the backward index file." << endl
              << "Using an empty index." << endl;
@@ -270,17 +240,18 @@ bool ORBIndex::readIndex()
 
 /**
  * @brief Write the index in memory to a file.
- * @return true on success else false
+ * @param backwardIndexPath
+ * @return the operation code
  */
-bool ORBIndex::write()
+u_int32_t ORBIndex::write(string backwardIndexPath)
 {
     ofstream ofs;
 
-    ofs.open(mBackwardIndexPath.c_str(), ios_base::binary);
+    ofs.open(backwardIndexPath.c_str(), ios_base::binary);
     if (!ofs.good())
     {
         cout << "Could not open the backward index file." << endl;
-        return false;
+        return INDEX_NOT_WRITTEN;
     }
 
     cout << "Writing the number of occurences." << endl;
@@ -302,7 +273,7 @@ bool ORBIndex::write()
         }
     }
 
-    return true;
+    return INDEX_WRITTEN;
 }
 
 
@@ -310,7 +281,7 @@ bool ORBIndex::write()
  * @brief Clear the index.
  * @return true on success else false.
  */
-bool ORBIndex::clear()
+u_int32_t ORBIndex::clear()
 {
     // Reset the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
@@ -324,52 +295,19 @@ bool ORBIndex::clear()
 
     cout << "Index cleared." << endl;
 
-    return true;
+    return INDEX_CLEARED;
 }
 
 
 /**
- * @brief Open the file that will contain all hits of the image.
- * @param i_imageId the image id.
- * @return true on success else false.
+ * @brief Load the index from a file.
+ * @param backwardIndexPath the path to the index file.
+ * @return the operation code.
  */
-bool ORBIndex::openHitFile(ofstream &ofs, unsigned i_imageId)
+u_int32_t ORBIndex::load(string backwardIndexPath)
 {
-    stringstream fileNameStream;
-    fileNameStream << "imageHits/" << i_imageId << ".dat";
+    clear();
+    readIndex(backwardIndexPath);
 
-    ofs.open(fileNameStream.str().c_str(), ios_base::binary);
-
-    if (!ofs.good())
-    {
-        cout << "Could not open the hit output file." << endl;
-        ofs.close();
-        return false;
-    }
-
-    return true;
-}
-
-
-/**
- * @brief Write a new hit in the file.
- * @param hit the new hit to write.
- * @param ofs the output file stream.
- * @return true on success else false.
- */
-bool ORBIndex::writeHit(ofstream &ofs, HitForward hit)
-{
-    if (!ofs.good())
-    {
-        cout << "Could not write to the output file." << endl;
-        return false;
-    }
-
-    ofs.write((char *)&hit.i_wordId, sizeof(u_int32_t));
-    ofs.write((char *)&hit.i_imageId, sizeof(u_int32_t));
-    ofs.write((char *)&hit.i_angle, sizeof(u_int16_t));
-    ofs.write((char *)&hit.x, sizeof(u_int16_t));
-    ofs.write((char *)&hit.y, sizeof(u_int16_t));
-
-    return true;
+    return INDEX_LOADED;
 }

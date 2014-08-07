@@ -29,7 +29,7 @@ gets filtered out. */
 class ORBIndex : public Index
 {
 public:
-    ORBIndex(string backwardIndexPath);
+    ORBIndex();
     virtual ~ORBIndex();
     void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                   unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
@@ -39,15 +39,13 @@ public:
     unsigned getMaxNbRecords() const {return maxNbRecords;}
     u_int32_t addImage(unsigned i_imageId, list<HitForward> hitList);
     u_int32_t removeImage(const unsigned i_imageId);
-    bool write();
-    bool clear();
+    u_int32_t write(string backwardIndexPath);
+    u_int32_t clear();
+    u_int32_t load(string backwardIndexPath);
 
 private:
-    bool readIndex();
-    bool openHitFile(ofstream &ofs, unsigned i_imageId);
-    bool writeHit(ofstream &ofs, HitForward hit);
+    bool readIndex(string backwardIndexPath);
 
-    string mBackwardIndexPath;
     u_int64_t nbOccurences[NB_VISUAL_WORDS];
     unsigned maxNbRecords;
     u_int64_t totalNbRecords;
