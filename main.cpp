@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "server.h"
 #include "httpserver.h"
 #include "requesthandler.h"
 #include "orb/orbfeatureextractor.h"
@@ -26,13 +25,11 @@ int main(int argc, char** argv)
     FeatureExtractor *ife = new ORBFeatureExtractor((ORBIndex *)index, wordIndex);
     Searcher *is = new ORBSearcher((ORBIndex *)index, wordIndex);
     RequestHandler *rh = new RequestHandler(ife, is, index);
-    Server *s = new Server(ife, is, index);
     HTTPServer *s2 = new HTTPServer(rh);
 
     s2->start();
     s->start();
 
-    s->join();
 
     delete s2;
     delete s;

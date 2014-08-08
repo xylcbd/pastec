@@ -4,8 +4,6 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    server.cpp \
-    clientconnection.cpp \
     imagereranker.cpp \
     imagererankerransac.cpp \
     imageloader.cpp \
@@ -17,10 +15,8 @@ SOURCES += main.cpp \
     requesthandler.cpp
 
 HEADERS += \
-    server.h \
     thread.h \
     dataMessages.h \
-    clientconnection.h \
     hit.h \
     searchResult.h \
     imagereranker.h \

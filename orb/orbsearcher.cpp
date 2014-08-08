@@ -11,7 +11,6 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include "orbsearcher.h"
-#include "clientconnection.h"
 #include "dataMessages.h"
 #include "imageloader.h"
 
@@ -174,8 +173,6 @@ void ORBSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
         req.results.push_back(res.i_imageId);
         rankedResults.pop();
     }
-
-    sendResultMsg(req, imageIds);
 }
 
 
@@ -188,34 +185,4 @@ unsigned long ORBSearcher::getTimeDiff(const timeval t1, const timeval t2) const
 {
     return ((t2.tv_sec - t1.tv_sec) * 1000000
             + (t2.tv_usec - t1.tv_usec)) / 1000;
-}
-
-
-/**
- * @brief Send the list of mathched image id to the client.
- * @param imageIds the list of image id results.
- */
-void ORBSearcher::sendResultMsg(SearchRequest &req, list<u_int32_t> &imageIds) const
-{
-    /* Search result:
-     * - 4 byt for the command code.
-     * - 4 bytes to give the number of images retrived.
-     * - 4 bytes per image giving their ids.
-     */
-
-    char *msg = new char[4 + 4 + imageIds.size() * sizeof(u_int32_t)];
-
-    *(u_int32_t *)msg = OK; // Result message.
-    *(u_int32_t *)(msg + 4) = imageIds.size();
-
-    char *p = msg + 8;
-    for (list<unsigned>::iterator it = imageIds.begin();
-         it != imageIds.end(); ++it)
-    {
-        *(u_int32_t *)p = *it;
-        p += sizeof(u_int32_t);
-    }
-
-    if (req.client != NULL)
-        req.client->sendReply(p - msg, msg);
 }
