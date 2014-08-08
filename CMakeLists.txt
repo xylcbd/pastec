@@ -31,11 +31,17 @@ set(HEADERS      server.h
                  orb/orbwordindex.h
                  searcher.h)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 find_package(Threads REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(microhttpd REQUIRED)
+find_package(jsoncpp REQUIRED)
 
 add_executable(PastecIndex ${SOURCES} ${HEADERS})
 
 target_link_libraries(PastecIndex ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(PastecIndex ${OpenCV_LIBS})
+target_link_libraries(PastecIndex ${LIBMICROHTTPD_LIBRARY})
+target_link_libraries(PastecIndex ${LIBJSONCPP_LIBRARY})
 
