@@ -26,6 +26,8 @@ enum Replies
     INDEX_WRITTEN =                     0x10060300,
     INDEX_NOT_WRITTEN =                 0x10060400,
     INDEX_CLEARED =                     0x10060500,
+
+    SEARCH_RESULTS =                    0x10070100,
 };
 
 
@@ -59,6 +61,8 @@ public:
             case INDEX_WRITTEN: s = "INDEX_WRITTEN"; break;
             case INDEX_NOT_WRITTEN: s = "INDEX_NOT_WRITTEN"; break;
             case INDEX_CLEARED: s = "INDEX_CLEARED"; break;
+
+            case SEARCH_RESULTS: s = "SEARCH_RESULTS"; break;
             default: break;
         }
         return s;

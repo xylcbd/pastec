@@ -139,7 +139,7 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
     imshow("Keypoints 1", img_res);
 #endif
 
-    return OK;
+    return SEARCH_RESULTS;
 }
 
 
