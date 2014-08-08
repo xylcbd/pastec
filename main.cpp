@@ -1,4 +1,5 @@
 #include <iostream>
+#include <signal.h>
 
 #include "httpserver.h"
 #include "requesthandler.h"
@@ -8,6 +9,14 @@
 
 
 using namespace std;
+
+HTTPServer *s;
+
+void intHandler(int signum) {
+    (void)signum;
+    s->stop();
+}
+
 
 int main(int argc, char** argv)
 {
@@ -25,13 +34,15 @@ int main(int argc, char** argv)
     FeatureExtractor *ife = new ORBFeatureExtractor((ORBIndex *)index, wordIndex);
     Searcher *is = new ORBSearcher((ORBIndex *)index, wordIndex);
     RequestHandler *rh = new RequestHandler(ife, is, index);
-    HTTPServer *s2 = new HTTPServer(rh);
+    s = new HTTPServer(rh, 4212);
 
-    s2->start();
-    s->start();
+    signal(SIGHUP, intHandler);
+    signal(SIGINT, intHandler);
 
+    s->run();
 
-    delete s2;
+    cout << "Terminating Pastec." << endl;
+
     delete s;
     delete (ORBSearcher *)is;
     delete (ORBFeatureExtractor *)ife;

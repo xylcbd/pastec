@@ -19,8 +19,9 @@ struct ConnectionInfo;
 class HTTPServer
 {
 public:
-    HTTPServer(RequestHandler *requestHandler);
-    int start();
+    HTTPServer(RequestHandler *requestHandler, unsigned i_port);
+    ~HTTPServer();
+    int run();
     int stop();
 
 private:
@@ -34,6 +35,10 @@ private:
 
     MHD_Daemon *daemon;
     RequestHandler *requestHandler;
+    pthread_cond_t *p_cond;
+    pthread_mutex_t *p_cond_mutex;
+
+    unsigned i_port;
 };
 
 

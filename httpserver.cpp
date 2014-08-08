@@ -9,25 +9,44 @@
 #include "dataMessages.h"
 #include "requesthandler.h"
 
-
-HTTPServer::HTTPServer(RequestHandler *requestHandler)
-    : daemon(NULL), requestHandler(requestHandler)
-{ }
-
-
 #define PORT            4213
-#define POSTBUFFERSIZE  512
-#define MAXCLIENTS      2
 
 
-int HTTPServer::start()
+HTTPServer::HTTPServer(RequestHandler *requestHandler, unsigned i_port)
+    : daemon(NULL), requestHandler(requestHandler), i_port(i_port)
 {
-    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, PORT, NULL, NULL,
+    p_cond = new pthread_cond_t();
+    p_cond_mutex = new pthread_mutex_t();
+    pthread_cond_init(p_cond, NULL);
+    pthread_mutex_init(p_cond_mutex, NULL);
+}
+
+
+HTTPServer::~HTTPServer()
+{
+    pthread_cond_destroy(p_cond);
+    pthread_mutex_destroy(p_cond_mutex);
+    delete p_cond_mutex;
+    delete p_cond;
+}
+
+
+int HTTPServer::run()
+{
+    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, i_port, NULL, NULL,
                               &answerToConnection, this,
                               MHD_OPTION_NOTIFY_COMPLETED, requestCompleted,
                               NULL, MHD_OPTION_END);
     if (daemon == NULL)
         return ERROR_GENERIC;
+
+    cout << "Ready to accept querries." << endl;
+
+    pthread_mutex_lock(p_cond_mutex);
+    pthread_cond_wait(p_cond, p_cond_mutex);
+    pthread_mutex_unlock(p_cond_mutex);
+
+    MHD_stop_daemon(daemon);
 
     return OK;
 }
@@ -35,7 +54,7 @@ int HTTPServer::start()
 
 int HTTPServer::stop()
 {
-    MHD_stop_daemon (daemon);
+    pthread_cond_signal(p_cond);
     return OK;
 }
 
