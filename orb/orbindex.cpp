@@ -80,14 +80,14 @@ unsigned ORBIndex::getTotalNbIndexedImages()
  */
 u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
 {
+    pthread_rwlock_wrlock(&rwLock);
     if (nbWords.find(i_imageId) != nbWords.end())
     {
-        cout << "An image with the id " << i_imageId
-             << " already exists in the index." << endl;
-        return IMAGE_ALREADY_IN_INDEX;
+        pthread_rwlock_unlock(&rwLock);
+        removeImage(i_imageId);
+        pthread_rwlock_wrlock(&rwLock);
     }
 
-    pthread_rwlock_wrlock(&rwLock);
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
     {
         HitForward hitFor = *it;
