@@ -4,20 +4,18 @@ project(PastecIndex)
 include_directories(. orb)
 
 set(SOURCES      main.cpp
-                 server.cpp
-                 clientconnection.cpp
                  imagereranker.cpp
                  imagererankerransac.cpp
                  imageloader.cpp
+                 httpserver.cpp
+                 requesthandler.cpp
                  orb/orbfeatureextractor.cpp
                  orb/orbindex.cpp
                  orb/orbsearcher.cpp
                  orb/orbwordindex.cpp)
 
-set(HEADERS      server.h
-                 thread.h
+set(HEADERS      thread.h
                  dataMessages.h
-                 clientconnection.h
                  hit.h
                  searchResult.h
                  imagereranker.h
@@ -29,7 +27,9 @@ set(HEADERS      server.h
                  orb/orbindex.h
                  orb/orbsearcher.h
                  orb/orbwordindex.h
-                 searcher.h)
+                 searcher.h
+                 httpserver.h
+                 requesthandler.h)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
