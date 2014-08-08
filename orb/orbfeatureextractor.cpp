@@ -7,7 +7,6 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include "orbfeatureextractor.h"
-#include "clientconnection.h"
 #include "dataMessages.h"
 #include "imageloader.h"
 
