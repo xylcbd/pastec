@@ -7,16 +7,6 @@
 using namespace std;
 
 
-enum Queries
-{
-    INDEX_IMAGE =                       0x00010000,
-    SEARCH =                            0x00020000,
-    PING =                              0x00030000,
-    WRITE_INDEX =                       0x00040000,
-    CLEAR_INDEX =                       0x00050000,
-    REMOVE_IMAGE =                      0x00060000
-};
-
 enum Replies
 {
     OK =                                0x10010000,
