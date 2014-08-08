@@ -16,7 +16,6 @@ SOURCES += main.cpp \
 
 HEADERS += \
     thread.h \
-    dataMessages.h \
     hit.h \
     searchResult.h \
     imagereranker.h \
@@ -30,7 +29,8 @@ HEADERS += \
     orb/orbwordindex.h \
     searcher.h \
     httpserver.h \
-    requesthandler.h
+    requesthandler.h \
+    messages.h
 
 LIBS += -pthread \
         -L/home/magsoft/trunks/opencv-2.4.6.1/build/lib \

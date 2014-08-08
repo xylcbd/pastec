@@ -7,7 +7,7 @@
 using namespace std;
 
 
-enum Replies
+enum MessagesOut
 {
     OK =                                0x10010000,
     ERROR_GENERIC =                     0x10020000,

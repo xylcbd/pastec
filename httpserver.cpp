@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "httpserver.h"
-#include "dataMessages.h"
+#include "messages.h"
 #include "requesthandler.h"
 
 #define PORT            4213

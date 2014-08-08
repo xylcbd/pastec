@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "orbindex.h"
-#include "dataMessages.h"
+#include "messages.h"
 
 
 ORBIndex::ORBIndex()

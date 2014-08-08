@@ -15,7 +15,7 @@ set(SOURCES      main.cpp
                  orb/orbwordindex.cpp)
 
 set(HEADERS      thread.h
-                 dataMessages.h
+                 messages.h
                  hit.h
                  searchResult.h
                  imagereranker.h

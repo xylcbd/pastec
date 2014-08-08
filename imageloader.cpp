@@ -4,7 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "imageloader.h"
-#include "dataMessages.h"
+#include "messages.h"
 
 
 u_int32_t ImageLoader::loadImage(unsigned i_imgSize, char *p_imgData, Mat &img)
