@@ -13,7 +13,7 @@ class PastecException(Exception):
 
 class PastecConnection:
 
-    def __init__(self, pastecHost = "localhost", pastecPort = 4213):
+    def __init__(self, pastecHost = "localhost", pastecPort = 4212):
         self.host = pastecHost
         self.port = pastecPort
 
