@@ -33,7 +33,7 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
     timeval t[5];
     gettimeofday(&t[0], NULL);
 
-    cout << "Loading the image and extracting the SIFTs." << endl;
+    cout << "Loading the image and extracting the ORBs." << endl;
 
     Mat img;
     u_int32_t i_ret = ImageLoader::loadImage(request.imageData.size(),
