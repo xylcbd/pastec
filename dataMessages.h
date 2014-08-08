@@ -29,7 +29,6 @@ enum Replies
     IMAGE_SIZE_TOO_BIG =                0x10050300,
     IMAGE_NOT_DECODED =                 0x10050400,
     IMAGE_SIZE_TOO_SMALL =              0x10050500,
-    IMAGE_ALREADY_IN_INDEX =            0x10050600,
     IMAGE_NOT_FOUND =                   0x10050700,
 
     INDEX_LOADED =                      0x10060100,
@@ -63,7 +62,6 @@ public:
             case IMAGE_SIZE_TOO_BIG: s = "IMAGE_SIZE_TOO_BIG"; break;
             case IMAGE_NOT_DECODED: s = "IMAGE_NOT_DECODED"; break;
             case IMAGE_SIZE_TOO_SMALL: s = "IMAGE_SIZE_TOO_SMALL"; break;
-            case IMAGE_ALREADY_IN_INDEX: s = "IMAGE_ALREADY_IN_INDEX"; break;
             case IMAGE_NOT_FOUND: s = "IMAGE_NOT_FOUND"; break;
 
             case INDEX_LOADED: s = "INDEX_LOADED"; break;
