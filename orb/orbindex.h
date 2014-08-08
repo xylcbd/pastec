@@ -55,7 +55,7 @@ private:
 
     BackwardIndexReaderAccess *indexAccess;
 
-    pthread_mutex_t readMutex;
+    pthread_rwlock_t rwLock;
 };
 
 #endif // ORBINDEX_H

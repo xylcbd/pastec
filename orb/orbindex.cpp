@@ -14,7 +14,7 @@ ORBIndex::ORBIndex()
     : maxNbRecords(1000000)
 {
     // Init the mutex.
-    pthread_mutex_init(&readMutex, NULL);
+    pthread_rwlock_init(&rwLock, NULL);
 
     // Initialize the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
@@ -39,14 +39,14 @@ ORBIndex::~ORBIndex()
 {
     indexAccess->close();
     delete indexAccess;
-    pthread_mutex_destroy(&readMutex);
+    pthread_rwlock_destroy(&rwLock);
 }
 
 
 void ORBIndex::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
                                      unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq)
 {
-    pthread_mutex_lock(&readMutex);
+    pthread_rwlock_rdlock(&rwLock);
 
     for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
@@ -55,19 +55,23 @@ void ORBIndex::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &im
         indexHitsForReq[i_wordId] = indexHits[i_wordId];
     }
 
-    pthread_mutex_unlock(&readMutex);
+    pthread_rwlock_unlock(&rwLock);
 }
 
 
 unsigned ORBIndex::countTotalNbWord(unsigned i_imageId)
 {
+    pthread_rwlock_rdlock(&rwLock);
     return nbWords[i_imageId];
+    pthread_rwlock_unlock(&rwLock);
 }
 
 
 unsigned ORBIndex::getTotalNbIndexedImages()
 {
+    pthread_rwlock_rdlock(&rwLock);
     return nbWords.size();
+    pthread_rwlock_unlock(&rwLock);
 }
 
 
@@ -84,6 +88,7 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         return IMAGE_ALREADY_IN_INDEX;
     }
 
+    pthread_rwlock_wrlock(&rwLock);
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
     {
         HitForward hitFor = *it;
@@ -99,6 +104,7 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         nbOccurences[hitFor.i_wordId]++;
         totalNbRecords++;
     }
+    pthread_rwlock_unlock(&rwLock);
 
     /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
         maxNbRecords = 0.00001 * totalNbRecords;*/
@@ -127,6 +133,7 @@ u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
         return IMAGE_NOT_FOUND;
     }
 
+    pthread_rwlock_wrlock(&rwLock);
     nbWords.erase(imgIt);
 
     for (unsigned i_wordId = 0; i_wordId < NB_VISUAL_WORDS; ++i_wordId)
@@ -145,6 +152,7 @@ u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
             ++it;
         }
     }
+    pthread_rwlock_unlock(&rwLock);
 
     cout << "Image " << i_imageId << " removed." << endl;
 
@@ -168,6 +176,8 @@ bool ORBIndex::readIndex(string backwardIndexPath)
     }
     else
     {
+        pthread_rwlock_wrlock(&rwLock);
+
         /* Read the table to know where are located the lines corresponding to each
          * visual word. */
         cout << "Reading the numbers of occurences." << endl;
@@ -233,6 +243,8 @@ bool ORBIndex::readIndex(string backwardIndexPath)
 
         delete[] wordOffSet;
 
+        pthread_rwlock_unlock(&rwLock);
+
         return true;
     }
 }
@@ -257,6 +269,8 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
         return INDEX_NOT_WRITTEN;
     }
 
+    pthread_rwlock_rdlock(&rwLock);
+
     cout << "Writing the number of occurences." << endl;
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
         ofs.write((char *)(nbOccurences + i), sizeof(u_int64_t));
@@ -276,6 +290,8 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
         }
     }
 
+    pthread_rwlock_unlock(&rwLock);
+
     return INDEX_WRITTEN;
 }
 
@@ -286,6 +302,7 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
  */
 u_int32_t ORBIndex::clear()
 {
+    pthread_rwlock_wrlock(&rwLock);
     // Reset the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
     {
@@ -295,6 +312,7 @@ u_int32_t ORBIndex::clear()
 
     nbWords.clear();
     totalNbRecords = 0;
+    pthread_rwlock_unlock(&rwLock);
 
     cout << "Index cleared." << endl;
 
