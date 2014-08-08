@@ -120,6 +120,7 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
  */
 u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
 {
+    pthread_rwlock_wrlock(&rwLock);
     unordered_map<u_int64_t, unsigned>::iterator imgIt =
         nbWords.find(i_imageId);
 
@@ -129,7 +130,6 @@ u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
         return IMAGE_NOT_FOUND;
     }
 
-    pthread_rwlock_wrlock(&rwLock);
     nbWords.erase(imgIt);
 
     for (unsigned i_wordId = 0; i_wordId < NB_VISUAL_WORDS; ++i_wordId)
