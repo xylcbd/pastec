@@ -11,7 +11,6 @@
 
 
 ORBIndex::ORBIndex()
-    : maxNbRecords(1000000)
 {
     // Init the mutex.
     pthread_rwlock_init(&rwLock, NULL);
@@ -105,9 +104,6 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         totalNbRecords++;
     }
     pthread_rwlock_unlock(&rwLock);
-
-    /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
-        maxNbRecords = 0.00001 * totalNbRecords;*/
 
     if (!hitList.empty())
         cout << "Image " << hitList.begin()->i_imageId << " added: "
@@ -204,15 +200,6 @@ bool ORBIndex::readIndex(string backwardIndexPath)
             nbWords[i_imageId]++;
             totalNbRecords++;
         }
-
-        /*if (totalNbRecords > MIN_TOTAL_NB_HITS_FOR_FILTERING_OUT)
-            maxNbRecords = 0.00001 * totalNbRecords;*/
-        unsigned i_nbSkipedWords = 0;
-        for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
-            if (nbOccurences[i] > maxNbRecords)
-                i_nbSkipedWords++;
-
-        cout << "Nb skipped words: " << i_nbSkipedWords << endl;
 
         indexAccess->reset();
 

@@ -66,11 +66,6 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
             const unsigned i_wordId = indices[j];
             if (imageReqHits.find(i_wordId) == imageReqHits.end())
             {
-                /* If the word has a too large number of occurence in the index, we consider
-                 * that it is not relevant. */
-                if (index->getWordNbOccurences(i_wordId) > index->getMaxNbRecords())
-                    continue;
-
                 /*if (computeSIFTEntropy(indices[j]) < 3.)
                     continue;*/
 
