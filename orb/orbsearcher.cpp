@@ -66,9 +66,6 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
             const unsigned i_wordId = indices[j];
             if (imageReqHits.find(i_wordId) == imageReqHits.end())
             {
-                /*if (computeSIFTEntropy(indices[j]) < 3.)
-                    continue;*/
-
                 // Convert the angle to a 16 bit integer.
                 Hit hit;
                 hit.i_imageId = 0;
