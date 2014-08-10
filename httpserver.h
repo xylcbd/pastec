@@ -44,11 +44,8 @@ private:
 
 struct ConnectionInfo
 {
-    ConnectionInfo() : b_receptionError(false) {}
-
     int connectionType;
     string url;
-    bool b_receptionError;
     struct MHD_PostProcessor *postprocessor;
     string answerString;
     int answerCode;

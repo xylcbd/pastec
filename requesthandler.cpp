@@ -85,12 +85,6 @@ bool RequestHandler::testURIWithPattern(vector<string> parsedURI, string p_patte
  */
 void RequestHandler::handleRequest(ConnectionInfo &conInfo)
 {
-    if (conInfo.b_receptionError)
-    {
-        // TODO: error.
-        ;
-    }
-
     vector<string> parsedURI = parseURI(conInfo.url);
 
     string p_image[] = {"index", "images", "IDENTIFIER", ""};
