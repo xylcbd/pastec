@@ -39,23 +39,59 @@ void intHandler(int signum) {
 }
 
 
+void printUsage()
+{
+    cout << "Usage :" << endl
+         << "./PastecIndex [-p portNumber] visualWordList" << endl;
+}
+
+
 int main(int argc, char** argv)
 {
     cout << "Pastec Index v0.0.1" << endl;
 
     if (argc < 2)
     {
-        cout << "Usage :" << endl
-             << "./ImageIndexer visualWordList" << endl;
+        printUsage();
         return 1;
     }
 
+#define EXIT_IF_LAST_ARGUMENT() \
+    if (i == argc - 1)          \
+    {                           \
+        printUsage();           \
+        return 1;    \
+    }
+
+    unsigned i_port = 4212;
+    string visualWordPath;
+
+    int i = 1;
+    while (i < argc)
+    {
+        if (string(argv[i]) == "-p")
+        {
+            EXIT_IF_LAST_ARGUMENT()
+            i_port = atoi(argv[++i]);
+        }
+        else if (i == argc - 1)
+        {
+            visualWordPath = argv[i];
+        }
+        else
+        {
+            printUsage();
+            return 1;
+        }
+        ++i;
+    }
+
     Index *index = new ORBIndex();
-    ORBWordIndex *wordIndex = new ORBWordIndex(string(argv[1]));
+    ORBWordIndex *wordIndex = new ORBWordIndex(visualWordPath);
     FeatureExtractor *ife = new ORBFeatureExtractor((ORBIndex *)index, wordIndex);
     Searcher *is = new ORBSearcher((ORBIndex *)index, wordIndex);
     RequestHandler *rh = new RequestHandler(ife, is, index);
-    s = new HTTPServer(rh, 4212);
+    s = new HTTPServer(rh, i_port);
 
     signal(SIGHUP, intHandler);
     signal(SIGINT, intHandler);
