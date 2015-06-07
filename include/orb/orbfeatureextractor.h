@@ -32,9 +32,6 @@
 #include <orbwordindex.h>
 #include <featureextractor.h>
 
-class ClientConnection;
-
-
 using namespace cv;
 using namespace std;
 

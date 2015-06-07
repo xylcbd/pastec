@@ -31,13 +31,9 @@
 using namespace std;
 using namespace cv;
 
-class ClientConnection;
-
-
 struct SearchRequest
 {
     vector<char> imageData;
-    ClientConnection *client;
     vector<uint32_t> results;
     vector<Rect> boundingRects;
 };

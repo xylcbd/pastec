@@ -1,4 +1,4 @@
-Pastec
+Pastec core windows port
 ======
 
 Introduction
@@ -30,4 +30,8 @@ API
 ---
 
 See [here](http://pastec.io/doc#api)
+
+### Windows port
+
+This repo is windows port of pastec core.
 

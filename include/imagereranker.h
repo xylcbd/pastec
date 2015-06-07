@@ -94,8 +94,8 @@ template<typename T> int icvCompressPoints( T* ptr, const uchar* mask, int mstep
 class CvModelEstimator2
 {
 public:
-    CvModelEstimator2(int _modelPoints, CvSize _modelSize, int _maxBasicSolutions);
-    virtual ~CvModelEstimator2();
+//     CvModelEstimator2(int _modelPoints, CvSize _modelSize, int _maxBasicSolutions);
+//     virtual ~CvModelEstimator2();
 
     virtual int runKernel( const CvMat* m1, const CvMat* m2, CvMat* model )=0;
     virtual bool runLMeDS( const CvMat* m1, const CvMat* m2, CvMat* model,
@@ -128,7 +128,6 @@ class CvHomographyEstimator : public CvModelEstimator2
 {
 public:
 	CvHomographyEstimator(int modelPoints)
-		:CvModelEstimator2(modelPoints, cvSize(modelPoints,modelPoints),0)
 	{
 		//cout << "CvHomographyEstimator::CvHomographyEstimator() called!!!!!!!" << endl;
 	}
