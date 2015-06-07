@@ -23,22 +23,23 @@
 #define PASTEC_HIT_H
 
 #include <sys/types.h>
+#include <cstdint>
 
 struct Hit
 {
-    u_int32_t i_imageId;
-    u_int16_t i_angle;
-    u_int16_t x;
-    u_int16_t y;
+    uint32_t i_imageId;
+    uint16_t i_angle;
+    uint16_t x;
+    uint16_t y;
 };
 
 struct HitForward
 {
-    u_int32_t i_wordId;
-    u_int32_t i_imageId;
-    u_int16_t i_angle;
-    u_int16_t x;
-    u_int16_t y;
+    uint32_t i_wordId;
+    uint32_t i_imageId;
+    uint16_t i_angle;
+    uint16_t x;
+    uint16_t y;
 };
 
 #endif // PASTEC_HIT_H

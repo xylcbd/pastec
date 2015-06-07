@@ -21,11 +21,10 @@
 
 #include <iostream>
 #include <fstream>
-#include <sys/time.h>
 
 #include <set>
-#include <tr1/unordered_set>
-#include <tr1/unordered_map>
+#include <unordered_set>
+#include <unordered_map>
 #include <queue>
 
 #include <opencv2/highgui/highgui.hpp>
@@ -55,11 +54,11 @@ class RankingThread : public Thread
 {
 public:
     RankingThread(ORBIndex *index, const unsigned i_nbTotalIndexedImages,
-                  unordered_map<u_int32_t, vector<Hit> > &indexHits)
+                  unordered_map<uint32_t, vector<Hit> > &indexHits)
         : index(index), i_nbTotalIndexedImages(i_nbTotalIndexedImages),
           indexHits(indexHits) { }
 
-    void addWord(u_int32_t i_wordId)
+    void addWord(uint32_t i_wordId)
     {
         wordIds.push_back(i_wordId);
     }
@@ -68,7 +67,7 @@ public:
     {
         weights.rehash(wordIds.size());
 
-        for (deque<u_int32_t>::const_iterator it = wordIds.begin();
+        for (deque<uint32_t>::const_iterator it = wordIds.begin();
             it != wordIds.end(); ++it)
         {
             const vector<Hit> &hits = indexHits[*it];
@@ -90,9 +89,9 @@ public:
 
     ORBIndex *index;
     const unsigned i_nbTotalIndexedImages;
-    unordered_map<u_int32_t, vector<Hit> > &indexHits;
-    deque<u_int32_t> wordIds;
-    unordered_map<u_int32_t, float> weights; // key: image id, value: image score.
+    unordered_map<uint32_t, vector<Hit> > &indexHits;
+    deque<uint32_t> wordIds;
+    unordered_map<uint32_t, float> weights; // key: image id, value: image score.
 };
 
 
@@ -100,15 +99,15 @@ public:
  * @brief Processed a search request.
  * @param request the request to proceed.
  */
-u_int32_t ORBSearcher::searchImage(SearchRequest &request)
+uint32_t ORBSearcher::searchImage(SearchRequest &request)
 {
-    timeval t[5];
-    gettimeofday(&t[0], NULL);
+    int64 t[5];
+	t[0] = cv::getTickCount();
 
     cout << "Loading the image and extracting the ORBs." << endl;
 
     Mat img;
-    u_int32_t i_ret = ImageLoader::loadImage(request.imageData.size(),
+    uint32_t i_ret = ImageLoader::loadImage(request.imageData.size(),
                                              request.imageData.data(), img);
     if (i_ret != OK)
         return i_ret;
@@ -120,9 +119,9 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
 
     ORB(2000, 1.02, 100)(img, noArray(), keypoints, descriptors);
 
-    gettimeofday(&t[1], NULL);
+	t[1] = cv::getTickCount();
 
-    cout << "time: " << getTimeDiff(t[0], t[1]) << " ms." << endl;
+	cout << "time: " << (t[1] - t[0]) / cv::getTickFrequency() * 1000 << " ms." << endl;
     cout << "Looking for the visual words. " << endl;
 
     const unsigned i_nbTotalIndexedImages = index->getTotalNbIndexedImages();
@@ -130,7 +129,7 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
                                        0.15 * i_nbTotalIndexedImages
                                        : i_nbTotalIndexedImages;
 
-    unordered_map<u_int32_t, list<Hit> > imageReqHits; // key: visual word, value: the found angles
+    unordered_map<uint32_t, list<Hit> > imageReqHits; // key: visual word, value: the found angles
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
         #define NB_NEIGHBORS 1
@@ -165,12 +164,12 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
 
     cout << i_nbTotalIndexedImages << " images indexed in the index." << endl;
 
-    unordered_map<u_int32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
+    unordered_map<uint32_t, vector<Hit> > indexHits; // key: visual word id, values: index hits.
     indexHits.rehash(imageReqHits.size());
     index->getImagesWithVisualWords(imageReqHits, indexHits);
 
-    gettimeofday(&t[2], NULL);
-    cout << "time: " << getTimeDiff(t[1], t[2]) << " ms." << endl;
+	t[2] = cv::getTickCount();
+	cout << "time: " << (t[2] - t[1]) / cv::getTickFrequency() * 1000 << " ms." << endl;
     cout << "Ranking the images." << endl;
 
     index->readLock();
@@ -180,7 +179,7 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
     unsigned i_wordsPerThread = indexHits.size() / NB_RANKING_THREAD + 1;
     RankingThread *threads[NB_RANKING_THREAD];
 
-    unordered_map<u_int32_t, vector<Hit> >::const_iterator it = indexHits.begin();
+    unordered_map<uint32_t, vector<Hit> >::const_iterator it = indexHits.begin();
     for (unsigned i = 0; i < NB_RANKING_THREAD; ++i)
     {
         threads[i] = new RankingThread(index, i_nbTotalIndexedImages, indexHits);
@@ -197,10 +196,10 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
         threads[i]->join();
 
     // Reduce...
-    unordered_map<u_int32_t, float> weights; // key: image id, value: image score.
+    unordered_map<uint32_t, float> weights; // key: image id, value: image score.
     weights.rehash(i_nbTotalIndexedImages);
     for (unsigned i = 0; i < NB_RANKING_THREAD; ++i)
-        for (unordered_map<u_int32_t, float>::const_iterator it = threads[i]->weights.begin();
+        for (unordered_map<uint32_t, float>::const_iterator it = threads[i]->weights.begin();
             it != threads[i]->weights.end(); ++it)
             weights[it->first] += it->second;
 
@@ -215,16 +214,16 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
          it != weights.end(); ++it)
         rankedResults.push(SearchResult(it->second, it->first, Rect()));
 
-    gettimeofday(&t[3], NULL);
-    cout << "time: " << getTimeDiff(t[2], t[3]) << " ms." << endl;
+	t[3] = cv::getTickCount();
+	cout << "time: " << (t[3] - t[2]) / cv::getTickFrequency() * 1000 << " ms." << endl;
     cout << "Reranking 300 among " << rankedResults.size() << " images." << endl;
 
     priority_queue<SearchResult> rerankedResults;
     reranker.rerank(imageReqHits, indexHits,
                     rankedResults, rerankedResults, 300);
 
-    gettimeofday(&t[4], NULL);
-    cout << "time: " << getTimeDiff(t[3], t[4]) << " ms." << endl;
+	t[4] = cv::getTickCount();
+    cout << "time: " << (t[4]-t[3])/cv::getTickFrequency()*1000 << " ms." << endl;
     cout << "Returning the results. " << endl;
 
     returnResults(rerankedResults, request, 100);
@@ -253,7 +252,7 @@ u_int32_t ORBSearcher::searchImage(SearchRequest &request)
 void ORBSearcher::returnResults(priority_queue<SearchResult> &rankedResults,
                                   SearchRequest &req, unsigned i_maxNbResults)
 {
-    list<u_int32_t> imageIds;
+    list<uint32_t> imageIds;
 
     unsigned i_res = 0;
     while(!rankedResults.empty()

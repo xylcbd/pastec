@@ -35,10 +35,10 @@ class HitForward;
 class Index
 {
 public:
-    virtual u_int32_t removeImage(const unsigned i_imageId) = 0;
-    virtual u_int32_t write(string backwardIndexPath) = 0;
-    virtual u_int32_t clear() = 0;
-    virtual u_int32_t load(string backwardIndexPath) = 0;
+    virtual uint32_t removeImage(const unsigned i_imageId) = 0;
+    virtual uint32_t write(string backwardIndexPath) = 0;
+    virtual uint32_t clear() = 0;
+    virtual uint32_t load(string backwardIndexPath) = 0;
 };
 
 #endif // PASTEC_INDEX_H

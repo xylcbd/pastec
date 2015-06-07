@@ -30,11 +30,12 @@
 #include <map>
 #include <vector>
 #include <list>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #include <hit.h>
 #include <backwardindexreaderaccess.h>
 #include <index.h>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace std::tr1;
@@ -48,29 +49,29 @@ class ORBIndex : public Index
 public:
     ORBIndex(string indexPath);
     virtual ~ORBIndex();
-    void getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                                  unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq);
+    void getImagesWithVisualWords(unordered_map<uint32_t, list<Hit> > &imagesReqHits,
+                                  unordered_map<uint32_t, vector<Hit> > &indexHitsForReq);
     unsigned getWordNbOccurences(unsigned i_wordId);
     unsigned countTotalNbWord(unsigned i_imageId);
     unsigned getTotalNbIndexedImages();
-    u_int32_t addImage(unsigned i_imageId, list<HitForward> hitList);
-    u_int32_t removeImage(const unsigned i_imageId);
-    u_int32_t write(string backwardIndexPath);
-    u_int32_t clear();
-    u_int32_t load(string backwardIndexPath);
+    uint32_t addImage(unsigned i_imageId, list<HitForward> hitList);
+    uint32_t removeImage(const unsigned i_imageId);
+    uint32_t write(string backwardIndexPath);
+    uint32_t clear();
+    uint32_t load(string backwardIndexPath);
     void readLock();
     void unlock();
 
 private:
     bool readIndex(string backwardIndexPath);
 
-    u_int64_t nbOccurences[NB_VISUAL_WORDS];
-    u_int64_t totalNbRecords;
+    uint64_t nbOccurences[NB_VISUAL_WORDS];
+    uint64_t totalNbRecords;
 
-    unordered_map<u_int64_t, unsigned> nbWords;
+    unordered_map<uint64_t, unsigned> nbWords;
     vector<Hit> indexHits[NB_VISUAL_WORDS];
 
-    pthread_rwlock_t rwLock;
+    cv::Mutex rwLock;
 };
 
 #endif // PASTEC_ORBINDEX_H

@@ -24,6 +24,7 @@
 
 #include <sys/types.h>
 #include <string>
+#include <cstdint>
 
 using namespace std;
 
@@ -62,7 +63,7 @@ public:
      * @param r the code.
      * @return the code converted to a string.
      */
-    static string codeToString(u_int32_t r)
+    static string codeToString(uint32_t r)
     {
         string s;
         switch (r)

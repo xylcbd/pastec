@@ -39,7 +39,7 @@ class BackwardIndexReaderAccess
 public:
     virtual ~BackwardIndexReaderAccess() {}
     virtual bool open(string indexPath) = 0;
-    virtual void moveAt(u_int64_t pos) = 0;
+    virtual void moveAt(uint64_t pos) = 0;
     virtual void read(char *p_data, unsigned i_nbBytes) = 0;
     virtual bool endOfIndex() = 0;
     virtual void reset() = 0;
@@ -58,7 +58,7 @@ public:
         return true;
     }
 
-    virtual void moveAt(u_int64_t pos)
+    virtual void moveAt(uint64_t pos)
     {
         ifs.seekg(pos);
     }
@@ -116,7 +116,7 @@ public:
         ifs.seekg(0, ios_base::beg);
 
         // Copy the file in memory.
-        u_int64_t i = 0;
+        uint64_t i = 0;
         while(!ifs.eof())
         {
             ifs.read(p_indexData + i, 1);
@@ -129,7 +129,7 @@ public:
         return true;
     }
 
-    virtual void moveAt(u_int64_t pos)
+    virtual void moveAt(uint64_t pos)
     {
         i_curPos = pos;
     }
@@ -157,8 +157,8 @@ public:
 
 private:
     char *p_indexData;
-    u_int64_t i_fileSize;
-    u_int64_t i_curPos;
+    uint64_t i_fileSize;
+    uint64_t i_curPos;
 };
 
 #endif // PASTEC_BACKWARDINDEXREADERACCESS_H

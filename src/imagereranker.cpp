@@ -30,23 +30,23 @@
 #include <imagereranker.h>
 
 
-void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                           unordered_map<u_int32_t, vector<Hit> > &indexHits,
+void ImageReranker::rerank(unordered_map<uint32_t, list<Hit> > &imagesReqHits,
+                           unordered_map<uint32_t, vector<Hit> > &indexHits,
                            priority_queue<SearchResult> &rankedResultsIn,
                            priority_queue<SearchResult> &rankedResultsOut,
                            unsigned i_nbResults)
 {
-    unordered_set<u_int32_t> firstImageIds;
+    unordered_set<uint32_t> firstImageIds;
 
     // Extract the first i_nbResults ranked images.
     getFirstImageIds(rankedResultsIn, i_nbResults, firstImageIds);
 
-    unordered_map<u_int32_t, RANSACTask> imgTasks;
+    unordered_map<uint32_t, RANSACTask> imgTasks;
 
     // Compute the histograms.
-    unordered_map<u_int32_t, Histogram> histograms; // key: the image id, value: the corresponding histogram.
+    unordered_map<uint32_t, Histogram> histograms; // key: the image id, value: the corresponding histogram.
 
-    for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
+    for (unordered_map<uint32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         // Try to match all the visual words of the request image.
@@ -56,17 +56,17 @@ void ImageReranker::rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
         assert(hits.size() == 1);
 
         // If there is several hits for the same word in the image...
-        const u_int16_t i_angle1 = hits.front().i_angle;
+        const uint16_t i_angle1 = hits.front().i_angle;
         const Point2f point1(hits.front().x, hits.front().y);
         const vector<Hit> &hitIndex = indexHits[i_wordId];
 
         for (unsigned i = 0; i < hitIndex.size(); ++i)
         {
-            const u_int32_t i_imageId = hitIndex[i].i_imageId;
+            const uint32_t i_imageId = hitIndex[i].i_imageId;
             // Test if the image belongs to the image to rerank.
             if (firstImageIds.find(i_imageId) != firstImageIds.end())
             {
-                const u_int16_t i_angle2 = hitIndex[i].i_angle;
+                const uint16_t i_angle2 = hitIndex[i].i_angle;
                 float f_diff = angleDiff(i_angle1, i_angle2);
                 unsigned bin = (f_diff - DIFF_MIN) / 360 * HISTOGRAM_NB_BINS;
                 assert(bin < HISTOGRAM_NB_BINS);
@@ -148,7 +148,7 @@ private:
  * @param firstImageIds a set to return the image ids.
  */
 void ImageReranker::getFirstImageIds(priority_queue<SearchResult> &rankedResultsIn,
-                                     unsigned i_nbResults, unordered_set<u_int32_t> &firstImageIds)
+                                     unsigned i_nbResults, unordered_set<uint32_t> &firstImageIds)
 {
     unsigned i_res = 0;
     while(!rankedResultsIn.empty()

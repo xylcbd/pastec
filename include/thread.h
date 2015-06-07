@@ -22,42 +22,82 @@
 #ifndef PASTEC_THREAD_H
 #define PASTEC_THREAD_H
 
-#include <pthread.h>
-#include <assert.h>
-
+#ifdef WIN32
+#include <process.h>
+#include <windows.h>
+#include <cassert>
+#undef min
+#undef max
 
 class Thread
 {
 public:
-    Thread() : b_mustStop(false) {}
-    virtual ~Thread() {}
-    void join()
-    {
-        b_mustStop = true;
-        int i_ret = pthread_join(thread, NULL);
-        assert(i_ret == 0);
-    }
+	Thread() : thread(nullptr),b_mustStop(false) {}
+	virtual ~Thread() {}
+	void join()
+	{
+		b_mustStop = true;
+		assert(thread);
+		WaitForSingleObject(thread, INFINITE);				
+	}
 
-    bool start()
-    {
-        pthread_create(&thread, NULL, &runThread, this);
-        return true;
-    }
+	bool start()
+	{
+		thread = (HANDLE)_beginthread(runThread, 0, this);
+		return true;
+	}
 
 protected:
-    static void *runThread(void *p)
-    {
-        Thread *newThread = (Thread *)p;
-        newThread->b_mustStop = false;
-        return newThread->run();
-    }
+	static void runThread(void *p)
+	{
+		Thread *newThread = (Thread *)p;
+		newThread->b_mustStop = false;
+		newThread->run();
+	}
 
-    bool b_mustStop;
+	bool b_mustStop;
 
 private:
-    virtual void *run() = 0;
-
-    pthread_t thread;
+	virtual void *run() = 0;
+	HANDLE thread;
 };
+
+#else
+#include <pthread.h>
+#include <cassert>
+class Thread
+{
+public:
+	Thread() : b_mustStop(false) {}
+	virtual ~Thread() {}
+	void join()
+	{
+		b_mustStop = true;
+		int i_ret = pthread_join(thread, NULL);
+		assert(i_ret == 0);
+	}
+
+	bool start()
+	{
+		pthread_create(&thread, NULL, &runThread, this);
+		return true;
+	}
+
+protected:
+	static void *runThread(void *p)
+	{
+		Thread *newThread = (Thread *)p;
+		newThread->b_mustStop = false;
+		return newThread->run();
+	}
+
+	bool b_mustStop;
+
+private:
+	virtual void *run() = 0;
+	pthread_t thread;
+};
+#endif //WIN32
+
 
 #endif // PASTEC_THREAD_H

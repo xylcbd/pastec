@@ -26,14 +26,15 @@
 
 #include <queue>
 #include <list>
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <opencv2/core/core.hpp>
 
 #include <thread.h>
 #include <searchResult.h>
 #include <hit.h>
+#include <iostream>
 
 using namespace std;
 using namespace std::tr1;
@@ -44,8 +45,8 @@ class ImageReranker
 {
 public:
     ImageReranker() {}
-    void rerank(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                unordered_map<u_int32_t, vector<Hit> > &indexHits,
+    void rerank(unordered_map<uint32_t, list<Hit> > &imagesReqHits,
+                unordered_map<uint32_t, vector<Hit> > &indexHits,
                 priority_queue<SearchResult> &rankedResultsIn,
                 priority_queue<SearchResult> &rankedResultsOut,
                 unsigned i_nbResults);
@@ -53,7 +54,7 @@ public:
 private:
     float angleDiff(unsigned i_angle1, unsigned i_angle2);
     void getFirstImageIds(priority_queue<SearchResult> &rankedResultsIn,
-                          unsigned i_nbResults, unordered_set<u_int32_t> &firstImageIds);
+                          unsigned i_nbResults, unordered_set<uint32_t> &firstImageIds);
     cv::Mat findHomography(InputArray _points1, InputArray _points2,
                             int method, double ransacReprojThreshold,
                             OutputArray _mask);
@@ -126,14 +127,29 @@ protected:
 class CvHomographyEstimator : public CvModelEstimator2
 {
 public:
-    CvHomographyEstimator( int modelPoints );
+	CvHomographyEstimator(int modelPoints)
+		:CvModelEstimator2(modelPoints, cvSize(modelPoints,modelPoints),0)
+	{
+		//cout << "CvHomographyEstimator::CvHomographyEstimator() called!!!!!!!" << endl;
+	}
 
-    virtual int runKernel( const CvMat* m1, const CvMat* m2, CvMat* model );
+    virtual int runKernel( const CvMat* m1, const CvMat* m2, CvMat* model )
+	{
+		//cout << "CvHomographyEstimator::runKernel() called!!!!!!!" << endl;
+		return 0;
+	}
     virtual bool refine( const CvMat* m1, const CvMat* m2,
-                         CvMat* model, int maxIters );
+                         CvMat* model, int maxIters )
+	{
+		//cout << "CvHomographyEstimator::refine() called!!!!!!!" << endl;
+		return true;
+	}
 protected:
     virtual void computeReprojError( const CvMat* m1, const CvMat* m2,
-                                     const CvMat* model, CvMat* error );
+                                     const CvMat* model, CvMat* error )
+	{
+		//cout << "CvHomographyEstimator::computeReprojError() called!!!!!!!" << endl;
+	}
 };
 
 #endif // PASTEC_IMAGERERANKER_H

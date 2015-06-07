@@ -24,7 +24,6 @@
 #include <sstream>
 #include <cstdlib>
 #include <algorithm>
-#include <sys/time.h>
 #include <assert.h>
 
 #include <orbindex.h>
@@ -34,7 +33,7 @@
 ORBIndex::ORBIndex(string indexPath)
 {
     // Init the mutex.
-    pthread_rwlock_init(&rwLock, NULL);
+    //pthread_rwlock_init(&rwLock, NULL);
 
     // Initialize the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
@@ -51,33 +50,35 @@ ORBIndex::ORBIndex(string indexPath)
  */
 unsigned ORBIndex::getWordNbOccurences(unsigned i_wordId)
 {
-    pthread_rwlock_rdlock(&rwLock);
+    //pthread_rwlock_rdlock(&rwLock);
+	cv::AutoLock locker(rwLock);
     assert(i_wordId < NB_VISUAL_WORDS);
     unsigned i_ret = nbOccurences[i_wordId];
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
     return i_ret;
 }
 
 
 ORBIndex::~ORBIndex()
 {
-    pthread_rwlock_destroy(&rwLock);
+    //pthread_rwlock_destroy(&rwLock);
 }
 
 
-void ORBIndex::getImagesWithVisualWords(unordered_map<u_int32_t, list<Hit> > &imagesReqHits,
-                                     unordered_map<u_int32_t, vector<Hit> > &indexHitsForReq)
+void ORBIndex::getImagesWithVisualWords(unordered_map<uint32_t, list<Hit> > &imagesReqHits,
+                                     unordered_map<uint32_t, vector<Hit> > &indexHitsForReq)
 {
-    pthread_rwlock_rdlock(&rwLock);
+    //pthread_rwlock_rdlock(&rwLock);
+	cv::AutoLock locker(rwLock);
 
-    for (unordered_map<u_int32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
+    for (unordered_map<uint32_t, list<Hit> >::const_iterator it = imagesReqHits.begin();
          it != imagesReqHits.end(); ++it)
     {
         const unsigned i_wordId = it->first;
         indexHitsForReq[i_wordId] = indexHits[i_wordId];
     }
 
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
 }
 
 
@@ -96,9 +97,10 @@ unsigned ORBIndex::countTotalNbWord(unsigned i_imageId)
 
 unsigned ORBIndex::getTotalNbIndexedImages()
 {
-    pthread_rwlock_rdlock(&rwLock);
+	cv::AutoLock locker(rwLock);
+    //pthread_rwlock_rdlock(&rwLock);
     unsigned i_ret = nbWords.size();
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
     return i_ret;
 }
 
@@ -107,14 +109,17 @@ unsigned ORBIndex::getTotalNbIndexedImages()
  * @brief Add a list of hits to the index.
  * @param  the list of hits.
  */
-u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
+uint32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
 {
-    pthread_rwlock_wrlock(&rwLock);
+	cv::AutoLock locker(rwLock);
+    //pthread_rwlock_wrlock(&rwLock);
     if (nbWords.find(i_imageId) != nbWords.end())
     {
-        pthread_rwlock_unlock(&rwLock);
+		rwLock.unlock();
+        //pthread_rwlock_unlock(&rwLock);
         removeImage(i_imageId);
-        pthread_rwlock_wrlock(&rwLock);
+		rwLock.lock();
+        //pthread_rwlock_wrlock(&rwLock);
     }
 
     for (list<HitForward>::iterator it = hitList.begin(); it != hitList.end(); ++it)
@@ -132,7 +137,7 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
         nbOccurences[hitFor.i_wordId]++;
         totalNbRecords++;
     }
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
 
     if (!hitList.empty())
         cout << "Image " << hitList.begin()->i_imageId << " added: "
@@ -147,16 +152,17 @@ u_int32_t ORBIndex::addImage(unsigned i_imageId, list<HitForward> hitList)
  * @param i_imageId the image id.
  * @return true on success else false.
  */
-u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
+uint32_t ORBIndex::removeImage(const unsigned i_imageId)
 {
-    pthread_rwlock_wrlock(&rwLock);
-    unordered_map<u_int64_t, unsigned>::iterator imgIt =
+	cv::AutoLock locker(rwLock);
+    //pthread_rwlock_wrlock(&rwLock);
+    unordered_map<uint64_t, unsigned>::iterator imgIt =
         nbWords.find(i_imageId);
 
     if (imgIt == nbWords.end())
     {
         cout << "Image " << i_imageId << " not found." << endl;
-        pthread_rwlock_unlock(&rwLock);
+        //pthread_rwlock_unlock(&rwLock);
         return IMAGE_NOT_FOUND;
     }
 
@@ -179,7 +185,7 @@ u_int32_t ORBIndex::removeImage(const unsigned i_imageId)
             ++it;
         }
     }
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
 
     cout << "Image " << i_imageId << " removed." << endl;
 
@@ -203,16 +209,17 @@ bool ORBIndex::readIndex(string backwardIndexPath)
     }
     else
     {
-        pthread_rwlock_wrlock(&rwLock);
+		cv::AutoLock locker(rwLock);
+        //pthread_rwlock_wrlock(&rwLock);
 
         /* Read the table to know where are located the lines corresponding to each
          * visual word. */
         cout << "Reading the numbers of occurences." << endl;
-        u_int64_t *wordOffSet = new u_int64_t[NB_VISUAL_WORDS];
-        u_int64_t i_offset = NB_VISUAL_WORDS * sizeof(u_int64_t);
+        uint64_t *wordOffSet = new uint64_t[NB_VISUAL_WORDS];
+        uint64_t i_offset = NB_VISUAL_WORDS * sizeof(uint64_t);
         for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
         {
-            indexAccess.read((char *)(nbOccurences + i), sizeof(u_int64_t));
+            indexAccess.read((char *)(nbOccurences + i), sizeof(uint64_t));
             wordOffSet[i] = i_offset;
             i_offset += nbOccurences[i] * BACKWARD_INDEX_ENTRY_SIZE;
         }
@@ -222,12 +229,12 @@ bool ORBIndex::readIndex(string backwardIndexPath)
         totalNbRecords = 0;
         while (!indexAccess.endOfIndex())
         {
-            u_int32_t i_imageId;
-            u_int16_t i_angle, x, y;
-            indexAccess.read((char *)&i_imageId, sizeof(u_int32_t));
-            indexAccess.read((char *)&i_angle, sizeof(u_int16_t));
-            indexAccess.read((char *)&x, sizeof(u_int16_t));
-            indexAccess.read((char *)&y, sizeof(u_int16_t));
+            uint32_t i_imageId;
+            uint16_t i_angle, x, y;
+            indexAccess.read((char *)&i_imageId, sizeof(uint32_t));
+            indexAccess.read((char *)&i_angle, sizeof(uint16_t));
+            indexAccess.read((char *)&x, sizeof(uint16_t));
+            indexAccess.read((char *)&y, sizeof(uint16_t));
             nbWords[i_imageId]++;
             totalNbRecords++;
         }
@@ -244,14 +251,14 @@ bool ORBIndex::readIndex(string backwardIndexPath)
             const unsigned i_nbOccurences = nbOccurences[i_wordId];
             hits.resize(i_nbOccurences);
 
-            for (u_int64_t i = 0; i < i_nbOccurences; ++i)
+            for (uint64_t i = 0; i < i_nbOccurences; ++i)
             {
-                u_int32_t i_imageId;
-                u_int16_t i_angle, x, y;
-                indexAccess.read((char *)&i_imageId, sizeof(u_int32_t));
-                indexAccess.read((char *)&i_angle, sizeof(u_int16_t));
-                indexAccess.read((char *)&x, sizeof(u_int16_t));
-                indexAccess.read((char *)&y, sizeof(u_int16_t));
+                uint32_t i_imageId;
+                uint16_t i_angle, x, y;
+                indexAccess.read((char *)&i_imageId, sizeof(uint32_t));
+                indexAccess.read((char *)&i_angle, sizeof(uint16_t));
+                indexAccess.read((char *)&x, sizeof(uint16_t));
+                indexAccess.read((char *)&y, sizeof(uint16_t));
                 hits[i].i_imageId = i_imageId;
                 hits[i].i_angle = i_angle;
                 hits[i].x = x;
@@ -262,7 +269,7 @@ bool ORBIndex::readIndex(string backwardIndexPath)
         indexAccess.close();
         delete[] wordOffSet;
 
-        pthread_rwlock_unlock(&rwLock);
+        //pthread_rwlock_unlock(&rwLock);
 
         return true;
     }
@@ -274,7 +281,7 @@ bool ORBIndex::readIndex(string backwardIndexPath)
  * @param backwardIndexPath
  * @return the operation code
  */
-u_int32_t ORBIndex::write(string backwardIndexPath)
+uint32_t ORBIndex::write(string backwardIndexPath)
 {
     if (backwardIndexPath == "")
         backwardIndexPath = DEFAULT_INDEX_PATH;
@@ -288,11 +295,12 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
         return INDEX_NOT_WRITTEN;
     }
 
-    pthread_rwlock_rdlock(&rwLock);
+	cv::AutoLock locker(rwLock);
+    //pthread_rwlock_rdlock(&rwLock);
 
     cout << "Writing the number of occurences." << endl;
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
-        ofs.write((char *)(nbOccurences + i), sizeof(u_int64_t));
+        ofs.write((char *)(nbOccurences + i), sizeof(uint64_t));
 
     cout << "Writing the index hits." << endl;
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
@@ -302,17 +310,17 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
         for (unsigned j = 0; j < wordHits.size(); ++j)
         {
             const Hit &hit = wordHits[j];
-            ofs.write((char *)(&hit.i_imageId), sizeof(u_int32_t));
-            ofs.write((char *)(&hit.i_angle), sizeof(u_int16_t));
-            ofs.write((char *)(&hit.x), sizeof(u_int16_t));
-            ofs.write((char *)(&hit.y), sizeof(u_int16_t));
+            ofs.write((char *)(&hit.i_imageId), sizeof(uint32_t));
+            ofs.write((char *)(&hit.i_angle), sizeof(uint16_t));
+            ofs.write((char *)(&hit.x), sizeof(uint16_t));
+            ofs.write((char *)(&hit.y), sizeof(uint16_t));
         }
     }
 
     ofs.close();
     cout << "Writing done." << endl;
 
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
 
     return INDEX_WRITTEN;
 }
@@ -322,9 +330,10 @@ u_int32_t ORBIndex::write(string backwardIndexPath)
  * @brief Clear the index.
  * @return true on success else false.
  */
-u_int32_t ORBIndex::clear()
+uint32_t ORBIndex::clear()
 {
-    pthread_rwlock_wrlock(&rwLock);
+	cv::AutoLock locker(rwLock);
+	//pthread_rwlock_wrlock(&rwLock);
     // Reset the nbOccurences table.
     for (unsigned i = 0; i < NB_VISUAL_WORDS; ++i)
     {
@@ -334,7 +343,7 @@ u_int32_t ORBIndex::clear()
 
     nbWords.clear();
     totalNbRecords = 0;
-    pthread_rwlock_unlock(&rwLock);
+    //pthread_rwlock_unlock(&rwLock);
 
     cout << "Index cleared." << endl;
 
@@ -347,7 +356,7 @@ u_int32_t ORBIndex::clear()
  * @param backwardIndexPath the path to the index file.
  * @return the operation code.
  */
-u_int32_t ORBIndex::load(string backwardIndexPath)
+uint32_t ORBIndex::load(string backwardIndexPath)
 {
     clear();
     readIndex(backwardIndexPath);
@@ -361,7 +370,8 @@ u_int32_t ORBIndex::load(string backwardIndexPath)
  */
 void ORBIndex::readLock()
 {
-    pthread_rwlock_rdlock(&rwLock);
+	rwLock.lock();
+    //pthread_rwlock_rdlock(&rwLock);
 }
 
 
@@ -370,5 +380,6 @@ void ORBIndex::readLock()
  */
 void ORBIndex::unlock()
 {
-    pthread_rwlock_unlock(&rwLock);
+	rwLock.unlock();
+    //pthread_rwlock_unlock(&rwLock);
 }

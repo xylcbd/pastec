@@ -38,7 +38,7 @@ struct SearchRequest
 {
     vector<char> imageData;
     ClientConnection *client;
-    vector<u_int32_t> results;
+    vector<uint32_t> results;
     vector<Rect> boundingRects;
 };
 
@@ -46,7 +46,7 @@ struct SearchRequest
 class Searcher
 {
 public:
-    virtual u_int32_t searchImage(SearchRequest &request) = 0;
+    virtual uint32_t searchImage(SearchRequest &request) = 0;
 };
 
 #endif // PASTEC_SEARCHER_H

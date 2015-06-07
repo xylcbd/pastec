@@ -21,7 +21,7 @@
 
 #include <iostream>
 #include <set>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -37,11 +37,11 @@ ORBFeatureExtractor::ORBFeatureExtractor(ORBIndex *index, ORBWordIndex *wordInde
 { }
 
 
-u_int32_t ORBFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
+uint32_t ORBFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_imgSize,
                                                  char *p_imgData)
 {
     Mat img;
-    u_int32_t i_ret = ImageLoader::loadImage(i_imgSize, p_imgData, img);
+    uint32_t i_ret = ImageLoader::loadImage(i_imgSize, p_imgData, img);
     if (i_ret != OK)
         return i_ret;
 
@@ -54,15 +54,15 @@ u_int32_t ORBFeatureExtractor::processNewImage(unsigned i_imageId, unsigned i_im
 
     unsigned i_nbKeyPoints = 0;
     list<HitForward> imageHits;
-    unordered_set<u_int32_t> matchedWords;
+    unordered_set<uint32_t> matchedWords;
     for (unsigned i = 0; i < keypoints.size(); ++i)
     {
         i_nbKeyPoints++;
 
         // Recording the angle on 16 bits.
-        u_int16_t angle = keypoints[i].angle / 360 * (1 << 16);
-        u_int16_t x = keypoints[i].pt.x;
-        u_int16_t y = keypoints[i].pt.y;
+        uint16_t angle = keypoints[i].angle / 360 * (1 << 16);
+        uint16_t x = keypoints[i].pt.x;
+        uint16_t y = keypoints[i].pt.y;
 
         vector<int> indices(1);
         vector<int> dists(1);
